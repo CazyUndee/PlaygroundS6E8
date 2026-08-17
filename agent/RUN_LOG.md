@@ -53,4 +53,12 @@ Execution facts only (not narrative — see HISTORY.md).
   0.915, verified on identical rows) and all3 = daily+social+weekend
   (0.917); queued screens. Some rapid workflow_dispatch runs were spuriously
   cancelled by the concurrency gate -> removed it (runners are isolated).
-- (pending) — sm_weekend, all3, age screens on GH Actions.
+- ~14:44-14:53 — Screen results (all GH Actions, lgbm_63 seed-42 5-fold vs
+  baseline 0.96380): total_screen 0.96377 (-0.00003), sm_weekend 0.96377
+  (-0.00003), all3 0.96380 (0.00000), age encodings 0.96352 (-0.00029).
+  ALL neutral/negative -> feature direction exhausted. Recorded in registry
+  (EXP-024 rejected, EXP-026 completed).
+- ~14:51 — Launched tune scan (16 configs) on GH Actions (run 32036912936).
+- ~14:52 — Launched feature-group ablation (run 32037019417).
+- ~14:53 — Launched forensics reproducibility (run 32037034891).
+- (pending) — tune + ablate + forensics results.
