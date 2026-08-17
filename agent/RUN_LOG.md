@@ -46,4 +46,11 @@ Execution facts only (not narrative — see HISTORY.md).
 - ~14:40 — OOF analysis: models are near-duplicates (corr 0.994-0.997;
   test seeds 0.9995); subgroup gradient reproduced (0-missing 0.973 ->
   9-missing 0.828).
-- (pending) — GH Actions EXP-026 (total_screen) and EXP-024 (age) screens.
+- ~14:43 — EXP-026 screen (total_screen = daily+weekend): lgbm_63 OOF
+  0.96377 vs baseline 0.96380 -> delta -0.00003 (NEGATIVE/neutral). Univariate
+  AUC gain (0.901 vs 0.889) did not transfer. Recorded.
+- ~14:44 — Discovered sm_weekend = social_media+weekend (univariate AUC
+  0.915, verified on identical rows) and all3 = daily+social+weekend
+  (0.917); queued screens. Some rapid workflow_dispatch runs were spuriously
+  cancelled by the concurrency gate -> removed it (runners are isolated).
+- (pending) — sm_weekend, all3, age screens on GH Actions.
