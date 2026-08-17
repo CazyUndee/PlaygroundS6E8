@@ -19,24 +19,28 @@ from agent.train_pipeline import COMMON_PARAMS, N_SPLITS, TARGET, build_features
 
 # Candidate configs: vary one or two knobs around the canonical lgbm_63
 # (num_leaves=63, lr=0.12, reg_alpha=0.5, reg_lambda=5, colsample=0.8,
-#  subsample=0.8, min_child_samples=20).
+#  subsample=0.8, min_child_samples=20). Every candidate keeps the canonical
+# regularization unless explicitly overridden (matches the EXP-023 baseline).
+BASE_REG = {"reg_alpha": 0.5, "reg_lambda": 5.0}
+
 CANDIDATES = {
-    "canonical_63": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20},
-    "lr_010": {"num_leaves": 63, "learning_rate": 0.10, "min_child_samples": 20},
-    "lr_015": {"num_leaves": 63, "learning_rate": 0.15, "min_child_samples": 20},
-    "leaves_95": {"num_leaves": 95, "learning_rate": 0.12, "min_child_samples": 20},
-    "leaves_31": {"num_leaves": 31, "learning_rate": 0.12, "min_child_samples": 20},
-    "mcs_50": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 50},
-    "mcs_10": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 10},
-    "colsample_095": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "colsample_bytree": 0.95},
-    "colsample_070": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "colsample_bytree": 0.7},
-    "subsample_095": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "subsample": 0.95},
-    "lambda_100": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_lambda": 10.0},
-    "lambda_20": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_lambda": 2.0},
-    "alpha_10": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_alpha": 1.0},
+    "canonical_63": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20}),
+    "lr_010": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.10, "min_child_samples": 20}),
+    "lr_015": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.15, "min_child_samples": 20}),
+    "leaves_95": dict(BASE_REG, **{"num_leaves": 95, "learning_rate": 0.12, "min_child_samples": 20}),
+    "leaves_127": dict(BASE_REG, **{"num_leaves": 127, "learning_rate": 0.12, "min_child_samples": 20}),
+    "leaves_31": dict(BASE_REG, **{"num_leaves": 31, "learning_rate": 0.12, "min_child_samples": 20}),
+    "mcs_50": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 50}),
+    "mcs_10": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 10}),
+    "colsample_095": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "colsample_bytree": 0.95}),
+    "colsample_070": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "colsample_bytree": 0.7}),
+    "subsample_095": dict(BASE_REG, **{"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "subsample": 0.95}),
+    "lambda_100": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_alpha": 0.5, "reg_lambda": 10.0},
+    "lambda_20": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_alpha": 0.5, "reg_lambda": 2.0},
+    "alpha_10": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_alpha": 1.0, "reg_lambda": 5.0},
+    "reg_none": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20},
     # capacity probes: can more model capacity push past the current ceiling?
     "deep_255": {"num_leaves": 255, "learning_rate": 0.08, "min_child_samples": 20, "reg_lambda": 10.0, "reg_alpha": 1.0},
-    "wide_127_lr010": {"num_leaves": 127, "learning_rate": 0.10, "min_child_samples": 20},
     "deep_255_reg": {"num_leaves": 255, "learning_rate": 0.08, "min_child_samples": 50, "reg_lambda": 15.0, "reg_alpha": 1.5},
 }
 
