@@ -481,3 +481,24 @@ features (train + test cross-check). Result:
 - A corrected scan (all candidates with canonical reg) is running on GH
   Actions to cleanly evaluate the other knobs. Note: don't re-promote
   configs for <~+0.0003 gains; fold variance is ~0.0016.
+
+### Feature ablation (lgbm_63, seed-42, 5-fold) — IMPORTANT interpretation fix
+Removing a feature group from the 44 features (OOF deltas vs full 0.96382):
+- **notifications_per_day: -0.0082** and **app_opens_per_day: -0.0064** —
+  the LARGEST effects in the whole ablation, despite near-zero marginal
+  correlation (single-feature AUC 0.492 / 0.541). The count features carry
+  huge CONDITIONAL signal: within fixed screen time, more notifications ->
+  lower rate and more app_opens -> higher rate (verified earlier).
+  **CORRECTION to earlier framing: "counts are weak" was only true
+  marginally; they are among the most important features for conditional
+  prediction.** Do NOT remove them.
+- -age: -0.00019, -sleep: -0.00030 (removal hurts — consistent with their
+  real per-value/nonlinear signal).
+- -domain_ratios: +0.00018, -categoricals: +0.00011, -isna: +0.00002,
+  -missingness_counts: +0.00002, -other_screen_time: +0.00004 — all within
+  fold noise (~0.0016), i.e. removal is NEUTRAL (not harmful, not clearly
+  helpful). In this reconstruction other_screen_time is partly derivable
+  from total_active_hours + daily, explaining its smaller standalone role
+  here vs the EXP-022 claim on the lost feature set.
+- Implication: the 44-feature set is near-optimal as-is; the only large,
+  reliable effects are the count features (keep them) and age/sleep (keep).

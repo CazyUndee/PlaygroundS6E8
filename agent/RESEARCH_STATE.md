@@ -37,6 +37,16 @@ program. Subgroup difficulty gradient reproduced on the champion
 (0-missing AUC 0.973 -> 9-missing 0.828); ensemble models are near-duplicates
 (corr 0.994-0.997), so extra seeds/configs add little.
 
+## Feature importance (ablation, 2026-08-17) — important correction
+A feature-group ablation (lgbm_63, seed-42, 5-fold; full = 0.96382) shows
+**`notifications_per_day` (-0.0082) and `app_opens_per_day` (-0.0064) are
+the most important features conditionally** despite near-zero marginal
+correlation; `age` (-0.0002) and `sleep` (-0.0003) also matter. Removing the
+domain-ratio group (+0.0002), categoricals (+0.0001), or `other_screen_time`
+(+0.00004) is neutral (within fold noise ~0.0016). The 44-feature set is
+near-optimal; keep the count features. (This corrects the earlier "counts
+are weak" framing — true marginally, false conditionally. See D20.)
+
 ## Feature-engineering direction is EXHAUSTED (as of 2026-08-17)
 All four screens on the champion (lgbm_63, seed-42, 5-fold, vs 0.96380
 baseline) were neutral or negative: total_screen -0.00003, sm_weekend
