@@ -413,3 +413,18 @@ features (train + test cross-check). Result:
   6->0.896, 7->0.873, 8->0.843, 9->0.828 (matches historical EXP-009).
 - Results curated: results/exp023/{submission.csv, pipeline_results.json,
   exp023_run.log}. Next: EXP-026/EXP-024 screens on GH Actions.
+
+### New feature candidate: sm_weekend (social_media + weekend) AUC 0.915
+- Scanning pairwise sums of the screen features found
+  `social_media_hours + weekend_screen_time` has univariate AUC 0.91522
+  (0.91529 verified on the same 457k-row subset as daily+weekend 0.90126) —
+  much stronger than `total_screen = daily + weekend` (0.901). The triplet
+  `daily + social + weekend` is 0.91674, marginally better.
+- Interpretation: the label depends on the latent "usage" mostly through the
+  social component + weekend; daily adds overlap/redundancy (daily includes
+  social + gaming + work + other). Weighted forms showed weight ~0.75 on
+  weekend is near-optimal, so the simple sum is a fine feature form.
+- Queue (EXP-026 family): screens for total_screen, sm_weekend, all3, age,
+  then promote winners into build_features and re-run dual-seed EXP-027.
+- Note: the queued age screen (exp024) was auto-cancelled when the workflow
+  file changed; re-trigger it after the current screen queue.
