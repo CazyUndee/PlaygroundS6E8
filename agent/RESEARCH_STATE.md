@@ -26,10 +26,16 @@ in HISTORY.md. It is now committed to the persistent repo (GitHub).
 | :--- | :--- | :---: | :--- |
 | EXP-021 | 42-feature rebuild, dual-seed 5-fold | 0.96402 | reproducible baseline |
 | EXP-022 | + `other_screen_time` (+_isna), **single-seed** | 0.96407 (+0.00042) | **PROMOTED** |
-| EXP-023 | 44-feature, **dual-seed** (42+100) | *(pending — running 2026-08-17)* | in progress |
+| EXP-023 | 44-feature, **dual-seed** (42+100) | **0.96466** (+0.00064 vs EXP-021) | **CANONICAL WINNER** |
 
-**Historical champion** (unreproducible): EXP-014 = 0.96448. Its exact script
-was lost before the 2026-08-14 session; treat as a directional reference only.
+**Current champion = EXP-023: 0.96466 OOF ROC-AUC** (seed 42: 0.96435,
+seed 100: 0.96439), computed on GitHub Actions (15 min, fully reproducible;
+fold-level AUCs verified identical to the partial local run). This **beats
+the historical (unreproducible) EXP-014 = 0.96448**, so the reconstructed
+44-feature pipeline with `other_screen_time` is the best result of the whole
+program. Subgroup difficulty gradient reproduced on the champion
+(0-missing AUC 0.973 -> 9-missing 0.828); ensemble models are near-duplicates
+(corr 0.994-0.997), so extra seeds/configs add little.
 
 ## Canonical pipeline (44 features)
 

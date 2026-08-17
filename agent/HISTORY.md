@@ -387,3 +387,29 @@ features (train + test cross-check). Result:
   noise). The `notifications_per_app_open` / `app_opens_per_notification`
   ratio features are therefore noise features — candidates for ablation in a
   simplification pass, though they likely cost nothing.
+
+### EXP-023 COMPLETE on GitHub Actions — new champion 0.96466
+- Run 32034710221 (ubuntu-latest, 4 vCPU, 890s wall). 44-feature dual-seed
+  (42+100) super-ensemble: seed42 = 0.96435, seed100 = 0.96439, **super =
+  0.96466**.
+- **Interpretation:** the reconstructed 44-feature pipeline BEATS the
+  historical lost-pipeline champion (EXP-014 = 0.96448) by +0.00018. The
+  `other_screen_time` feature's dual-seed gain is +0.00064 over the
+  42-feature EXP-021 rebuild — even larger than the +0.00042 single-seed
+  estimate, so the EXP-022 promotion is strongly confirmed.
+- **Reproducibility:** seed-42 fold-level AUCs match the (killed) local run
+  EXACTLY (0.96313/0.96365/0.96386/0.96468/0.96375) — cross-environment
+  determinism with the same LightGBM major version. OOF/test arrays saved
+  (artifact exp023-results, 65MB tar.gz; 90-day retention).
+- **Diversity reality:** the 3 LGBM configs correlate 0.994-0.995 within a
+  seed; the two seed ensembles correlate 0.997 (OOF) / 0.9995 (test). The
+  ensemble is near-duplicate averaging; further seeds/configs of the same
+  architecture will give diminishing returns (D9 remains true but the
+  remaining headroom is tiny). Genuine diversity would need a structurally
+  different (but comparable-AUC) model — all such attempts so far have been
+  rejected (XGB too correlated, HGB worse/slower, extra-trees much worse).
+- **Subgroup gradient reproduced on the champion:** OOF AUC by missingness
+  count: 0->0.973, 1->0.969, 2->0.961, 3->0.949, 4->0.934, 5->0.915,
+  6->0.896, 7->0.873, 8->0.843, 9->0.828 (matches historical EXP-009).
+- Results curated: results/exp023/{submission.csv, pipeline_results.json,
+  exp023_run.log}. Next: EXP-026/EXP-024 screens on GH Actions.

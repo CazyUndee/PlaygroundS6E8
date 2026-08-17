@@ -2,10 +2,11 @@
   "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
   "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
   "last_recovered_from": "huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446",
-  "current_phase": "PHASE_10_GITHUB_ACTIONS_COMPUTE",
+  "current_phase": "PHASE_11_FEATURE_SCREENS_ON_CHAMPION",
   "compute_environment": "ALL model compute runs on GitHub Actions (ubuntu-latest, 4 vCPU) via .github/workflows/research.yml; local machine is orchestration only (push / gh workflow run / download artifacts / curate + commit results)",
-  "canonical_score": null,
-  "note_on_historical_score": "EXP-014 = 0.96448 was the historical champion but its exact script was lost; it is directional only.",
+  "canonical_score": 0.96466,
+  "canonical_experiment": "EXP-023 (44-feature dual-seed super-ensemble, seeds 42+100; seed42=0.96435 seed100=0.96439)",
+  "note_on_historical_score": "EXP-014 = 0.96448 (lost pipeline) is now BEATEN by the reproducible EXP-023 = 0.96466.",
   "reproducible_baseline": {
     "exp": "EXP-021",
     "pipeline": "agent/train_pipeline.py (42 features, dual-seed 5-fold)",
@@ -18,12 +19,19 @@
     "delta_vs_exp021_seed42": 0.00042
   },
   "active_experiment": {
-    "id": "EXP-023",
-    "description": "44-feature dual-seed (42+100) 5-fold run of reconstructed train_pipeline.py",
+    "id": "EXP-026/EXP-024",
+    "description": "Feature screens (total_screen, age encoding) vs 44-feature lgbm_63 baseline",
     "status": "queued_on_github_actions",
-    "script": "agent/train_pipeline.py",
-    "command": "gh workflow run research.yml -f task=exp023_canonical",
-    "artifact": "gh run download <run_id> -n exp023-results"
+    "script": "exp_screen_features.py",
+    "command": "gh workflow run research.yml -f task=exp026_total_screen / -f task=exp024_age_screen"
+  },
+  "champion": {
+    "id": "EXP-023",
+    "oof_auc": 0.96466,
+    "submission": "results/exp023/submission.csv",
+    "results": "results/exp023/pipeline_results.json",
+    "oof_arrays": "workflow artifact exp023-results (retention 90d); also scratch_oof/ locally",
+    "regenerate": "gh workflow run research.yml -f task=exp023_canonical"
   },
   "local_partial_reference": "Local EXP-023 seed-42 folds 1-4 lgbm_63 fold AUCs: 0.96313/0.96365/0.96386/0.96468 (tracks historical fold pattern; fold 5+seed 100 not run locally)",
   "completed_experiments": [

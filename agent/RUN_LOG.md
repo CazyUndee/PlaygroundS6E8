@@ -37,5 +37,13 @@ Execution facts only (not narrative — see HISTORY.md).
   exp023_canonical, exp026_total_screen, exp024_age_screen, all) +
   `requirements.txt`. Local machine is now orchestration only: push →
   `gh workflow run` → download artifacts → curate results → commit.
-- (pending) — GH Actions EXP-023 dual-seed result + submission; then
-  EXP-026/EXP-024 screens on GH Actions.
+- ~14:37 — **GH Actions EXP-023 COMPLETE (run 32034710221, 890s, success).**
+  Seed42 ensemble = 0.96435, Seed100 = 0.96439, **super-ensemble =
+  0.96466** (new reproducible champion, beats historical 0.96448). Fold
+  AUCs match the local partial run exactly (cross-env reproducibility).
+  Artifacts downloaded (submission.csv, pipeline_results.json,
+  oof_arrays.tar.gz) and curated into results/exp023/.
+- ~14:40 — OOF analysis: models are near-duplicates (corr 0.994-0.997;
+  test seeds 0.9995); subgroup gradient reproduced (0-missing 0.973 ->
+  9-missing 0.828).
+- (pending) — GH Actions EXP-026 (total_screen) and EXP-024 (age) screens.
