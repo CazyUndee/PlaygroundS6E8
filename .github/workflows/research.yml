@@ -25,12 +25,10 @@ on:
 
 # All compute happens here on hosted Linux runners. Local machine is
 # orchestration only (git push / gh workflow run / artifact download).
+# No concurrency gate: GH runners are isolated, so parallel runs are safe
+# (and rapid workflow_dispatch triggers were getting spuriously cancelled).
 permissions:
   contents: read
-
-concurrency:
-  group: research-compute
-  cancel-in-progress: false
 
 jobs:
   exp023_canonical:
