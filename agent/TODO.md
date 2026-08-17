@@ -10,7 +10,15 @@ command sequence — let evidence decide.
 - [ ] **EXP-023**: Record the dual-seed (42+100) 5-fold result of the 44-feature
       pipeline with `other_screen_time` (reconstructed `train_pipeline.py`).
       Confirm the EXP-022 gain (+0.00042) survives the full dual-seed protocol
-      and produce a fresh matched submission.
+      and produce a fresh matched submission. *(running — see RUN_LOG)*
+
+- [ ] **EXP-024 — age nonlinearity**: `age` (integer [18,35]) has ~0 linear
+      correlation with the label but a large nonlinear per-age effect that
+      survives within fixed screen-time bins (24/26/28 high ~0.77; 18/33 low
+      ~0.64). Hypothesis: raw numeric age is under-split by the trees.
+      Test, under identical seed-42 folds vs the 44-feature baseline
+      (0.96407): (a) age as native categorical, (b) one-hot age, (c) add
+      `age_even` + high-age flags. Cheap single-seed read first.
 
 ## P1 (strong hypotheses, quick reads)
 

@@ -199,3 +199,87 @@ this paragraph predates that run finishing.)
   checking other plausible sum/ratio constraints among remaining features
   (e.g. is there a hidden relationship between `notifications_per_day` and
   `app_opens_per_day` beyond the simple ratio already computed?).
+
+---
+## Session 2026-08-17 (recovery) — GitHub migration, pipeline reconstruction, and forensics
+### Context
+Fresh workspace. HF dataset `cazyundee/PlaygroundS6E8` was the only source
+of truth (no `hf` CLI, so files were pulled over plain HTTPS). Recovered the
+memory files and found the persistent state was **internally inconsistent**:
+HISTORY.md recorded the 2026-08-14 session (pipeline rebuild EXP-021,
+other_screen_time discovery EXP-022, and the launched-but-unrecorded
+EXP-023), but `train_pipeline.py` was MISSING from the repo, and
+GOALS/DECISIONS/TODO/RUN_LOG were empty while RESEARCH_STATE/checkpoint/
+registry still described the pre-recovery state. The canonical pipeline had
+been lost a second time (same failure mode as D14).
+
+### Recovery actions
+- Reconstructed `agent/train_pipeline.py` from the architecture described in
+  HISTORY.md: 44 features (9 numeric + 3 categorical + 12 `_isna` + 3
+  missingness-count + 15 domain ratios + other_screen_time + its `_isna`),
+  3 regularized LGBM configs (num_leaves 63/45/127; reg_alpha 0.5/0.5/1.0;
+  reg_lambda 5/5/10; lr 0.12; 2000 trees early-stop 100; colsample/subsample
+  0.8; min_child_samples 20), dual-seed (42+100) 5-fold rank-average.
+  This is an *equivalent* reconstruction, not the lost byte-for-byte script.
+- Backfilled GOALS.md / DECISIONS.md / TODO.md / RUN_LOG.md (were empty) and
+  reconciled RESEARCH_STATE.md / checkpoint.json / experiments_registry.json
+  (added EXP-021/022/023 entries).
+- Migrated the persistent home from Hugging Face to **GitHub**
+  `CazyUndee/PlaygroundS6E8` (plain git blobs, no LFS, so a plain clone is
+  self-contained). Verified the other_screen_time constraint on fresh data:
+  zero violations, residual Pearson r = 0.305 with target.
+- Launched EXP-023 (44-feature dual-seed) as the new ground truth.
+
+### Runtime observation (important for future sessions)
+On this Windows host LightGBM is ~10x slower than the 4-vCPU Linux sandbox
+that produced the historical 14.3-min dual-seed runtime. The process spawns
+~23 threads (8 logical CPUs) but achieves only ~2x effective parallelism
+(~1.7 cores average), and fold 1 of seed 42 took ~45 min for 3 models
+(~15 min/model, best_iteration ~300 trees). Full dual-seed would be ~7h.
+**Practical implication:** on this host, prefer cheaper protocols (single
+seed, 3-fold, fewer trees) for directional reads; reserve full dual-seed for
+promoted changes. Do NOT interpret the slow wall-clock as a change in the
+research question — it is an environment property.
+
+### Forensics: systematic constraint search (new)
+Ran a zero-violation constraint screen over all pairs/sums of the 9 numeric
+features (train + test cross-check). Result:
+- **`age` is an exact integer** in [18, 35] (18 distinct values), like
+  notifications/app_opens. All `*_hours` features are 2-decimal continuous.
+- Most "zero-violation" hits are **trivial range artifacts** (e.g.
+  `age >= sleep_hours` because age min 18 > sleep max 9; `notifications >=
+  screen_time` because notifications min 20 > screen max 15). These carry no
+  information and must be filtered out by range-overlap, not just
+  zero-violations.
+- **No NEW hard constraint of the other_screen_time magnitude was found.**
+  The residual correlations from sum decompositions are all just
+  re-expressions of the known `dst >= social + gaming + work` constraint
+  (e.g. `dst - gaming - work` = social + other, r=0.565 — redundant with
+  existing features). `age >= dst + gaming` is *almost* always true but has
+  1 test violation, so it is a soft pattern, not a hard constraint.
+
+### Forensics: feature-target signal structure (new)
+- Signal is heavily concentrated: Pearson r with label —
+  daily_screen_time 0.611, weekend_screen_time 0.590, social_media 0.532,
+  work_study 0.251, gaming 0.205; everything else ~0 (sleep 0.042, app_opens
+  0.064, notifications -0.012, age 0.004).
+- `weekend_extra = weekend - daily` has r ~ 0.014, i.e. weekend_screen_time's
+  signal is almost entirely redundant with daily_screen_time (already
+  handled by existing weekend features).
+- **NEW LEAD — age carries a real NONLINEAR signal despite r~0.004.**
+  Target rate by age (complete rows only, so not missingness-confounded):
+  24->0.770, 26->0.777, 28->0.773, 32->0.736, 22->0.740 are HIGH; 18->0.657,
+  33->0.641, 23->0.671, 25->0.672, 27->0.674 are LOW. The pattern PERSISTS
+  within a fixed screen-time bin (5.5-7.0h: 24->0.641 vs 33->0.423), so it
+  is independent of the dominant screen-time signal. Single-feature AUCs:
+  `age in {24,26,28}` = 0.525, `age even` = 0.521, raw age rank = 0.502
+  (vs daily_screen_time 0.890). Not a clean parity rule (18 and 30 are even
+  but LOW), so the mechanism is likely a specific per-age generator effect.
+- **Hypothesis (EXP-024 candidate):** raw numeric `age` may be under-used by
+  the trees (weak marginal gain -> few splits); explicitly exposing the age
+  buckets/parity (e.g. treat age as categorical, one-hot, or add `age_even`
+  + high-age flags) may recover this signal for a small OOF gain. Must be
+  tested under identical folds vs the 44-feature seed-42 baseline (0.96407).
+- **Lesson:** a feature with ~0 linear correlation can still hide a large
+  nonlinear/independent effect. Check target-rate by distinct value before
+  dismissing low-correlation features in synthetic data.

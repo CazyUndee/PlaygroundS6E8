@@ -61,6 +61,10 @@ colsample/subsample 0.8; min_child_samples 20). 5-fold stratified CV, seeds
    the label; the subgroup-AUC drop is an information/difficulty effect.
 5. **No duplicate-row leakage; no significant train/test covariate shift on
    values** (though missingness *rates* differ a few points — see D16).
+6. **`age` hides a real nonlinear signal despite r≈0 with the label**
+   (integer [18,35]; ages 24/26/28 ≈ 0.77 target rate vs 18/33 ≈ 0.64,
+   independent of screen time). Raw numeric age may be under-used by the
+   trees — EXP-024 candidate (explicit categorical/parity encoding).
 
 ## Rejected / not-promoted (durable)
 
@@ -74,12 +78,15 @@ colsample/subsample 0.8; min_child_samples 20). 5-fold stratified CV, seeds
 
 1. Does the EXP-022 `other_screen_time` gain survive the **full dual-seed**
    protocol? (EXP-023 — running.)
-2. Are there **other undiscovered hard generator constraints** with non-trivial
-   residuals (systematic constraint search)?
-3. Does **more seed diversity** (3rd partition seed) keep helping or plateau?
-4. Is the ensemble's value real **prediction diversity** or near-duplicate
+2. Does explicitly encoding the **nonlinear `age` signal** beat raw numeric
+   age? (EXP-024 candidate.)
+3. Are there **other undiscovered hard generator constraints** with non-trivial
+   residuals? *(systematic search this session found none beyond the known
+   `dst >= social+gaming+work`; see HISTORY.)*
+4. Does **more seed diversity** (3rd partition seed) keep helping or plateau?
+5. Is the ensemble's value real **prediction diversity** or near-duplicate
    averaging (correlation re-measurement)?
-5. Is the new champion's subgroup behavior (by missingness/usage decile)
+6. Is the new champion's subgroup behavior (by missingness/usage decile)
    consistent with the documented difficulty gradient?
 
 See `TODO.md` for the live queue and `DECISIONS.md` for durable conclusions.
