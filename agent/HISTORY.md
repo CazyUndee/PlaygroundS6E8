@@ -376,3 +376,8 @@ features (train + test cross-check). Result:
 - This explains and strengthens the EXP-026 `total_screen = daily + weekend`
   hypothesis: it exposes the latent the generator uses; trees currently need
   expensive 2D splits to approximate it.
+- The age effect is INDEPENDENT of every other signal tested: it adds a
+  consistent ~+0.06-0.07 target rate within every app_opens quintile and every
+  sleep bin (e.g. app_opens q0: 0.677 vs 0.742; sleep 4.5-6h: 0.663 vs 0.737),
+  on top of the already-shown independence from screen time and categoricals.
+  Strong support for EXP-024 (explicit age encoding).
