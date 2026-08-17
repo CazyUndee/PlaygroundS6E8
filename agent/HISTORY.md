@@ -319,3 +319,13 @@ features (train + test cross-check). Result:
   (2) the sharp threshold explains why linear/neural models underfit to
   ~0.92 (EXP-017) while trees excel; (3) categoricals can be treated as
   essentially non-informative for this task.
+
+### Operational lesson: do NOT run two LightGBM jobs concurrently here
+- Launched the EXP-024 quick read (num_threads=3) alongside the canonical
+  EXP-023 run (n_jobs=-1). Both LightGBM OpenMP pools contended badly:
+  EXP-023's effective throughput dropped from ~1.7 cores to ~0.9 cores and
+  EXP-024 got ~0.13 cores. Killed EXP-024 and deferred it to run
+  sequentially after EXP-023.
+- **Rule for this host:** one LightGBM training job at a time. Cheap
+  pandas-only forensics are fine to run concurrently with a training job,
+  but a second tree-training job is counterproductive.

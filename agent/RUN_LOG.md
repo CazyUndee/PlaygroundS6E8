@@ -25,4 +25,8 @@ Execution facts only (not narrative — see HISTORY.md).
   count/sleep nonlinearity) completed; findings committed to GitHub.
 - ~14:45 — Launched EXP-024 age-encoding quick A/B read (15% subsample,
   3-fold, 3 models, 2 arms) in parallel with EXP-023.
-- (pending) — EXP-023 seed-42 full + seed-100; EXP-024 result.
+- ~15:45 — KILLED EXP-024 (PID 5644) after it starved EXP-023: two
+  concurrent LightGBM jobs on this host collapse effective throughput
+  (EXP-023 fell from ~1.7 to ~0.9 cores). EXP-024 deferred to run after
+  EXP-023. Lesson recorded.
+- (pending) — EXP-023 seed-42 full + seed-100; then EXP-024 sequential.
