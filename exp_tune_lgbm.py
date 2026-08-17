@@ -34,6 +34,10 @@ CANDIDATES = {
     "lambda_100": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_lambda": 10.0},
     "lambda_20": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_lambda": 2.0},
     "alpha_10": {"num_leaves": 63, "learning_rate": 0.12, "min_child_samples": 20, "reg_alpha": 1.0},
+    # capacity probes: can more model capacity push past the current ceiling?
+    "deep_255": {"num_leaves": 255, "learning_rate": 0.08, "min_child_samples": 20, "reg_lambda": 10.0, "reg_alpha": 1.0},
+    "wide_127_lr010": {"num_leaves": 127, "learning_rate": 0.10, "min_child_samples": 20},
+    "deep_255_reg": {"num_leaves": 255, "learning_rate": 0.08, "min_child_samples": 50, "reg_lambda": 15.0, "reg_alpha": 1.5},
 }
 
 
