@@ -34,13 +34,40 @@ The `agent/` directory is the research system:
 
 ## Resume the research
 
-```bash
-pip install lightgbm scikit-learn pandas numpy scipy
-python -u agent/train_pipeline.py --out submission_matched_super.csv
-```
-
 Read `agent/RESEARCH_STATE.md` and `agent/DECISIONS.md` first to recover the
 current understanding; search `agent/HISTORY.md` for historical detail.
+
+## Compute: GitHub Actions (all training runs here)
+
+**All model compute runs on GitHub Actions** (D19) — the local machine is
+orchestration only. Trigger experiments with the `gh` CLI:
+
+```bash
+# Canonical dual-seed 5-fold pipeline (the champion, EXP-023)
+gh workflow run research-compute -f task=exp023_canonical
+
+# Feature screen (lgbm_63, seed-42, 5-fold) vs the committed baseline
+gh workflow run research-compute -f task=screen -f feature=total_screen
+# feature options: total_screen, sm_weekend, all3, age, both
+
+# Hyperparameter scan and feature ablation
+gh workflow run research-compute -f task=tune
+gh workflow run research-compute -f task=ablate
+
+# Reproduce the pandas forensics
+gh workflow run research-compute -f task=forensics
+```
+
+Collect results:
+
+```bash
+github run list --workflow=research-compute
+gh run download <run_id> -n <artifact-name> -D artifacts/
+```
+
+Then curate small results into `results/<exp>/`, update the memory files in
+`agent/`, and commit. Large OOF arrays live as workflow artifacts
+(90-day retention); the exact scripts are always in the repo (D14).
 
 ## Data
 
