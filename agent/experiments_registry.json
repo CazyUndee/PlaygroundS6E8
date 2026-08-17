@@ -664,9 +664,18 @@
       "num_seeds": 2,
       "features_count": 42,
       "regularization": {
-        "lgbm_63": {"reg_alpha": 0.5, "reg_lambda": 5.0},
-        "lgbm_45": {"reg_alpha": 0.5, "reg_lambda": 5.0},
-        "lgbm_127": {"reg_alpha": 1.0, "reg_lambda": 10.0}
+        "lgbm_63": {
+          "reg_alpha": 0.5,
+          "reg_lambda": 5.0
+        },
+        "lgbm_45": {
+          "reg_alpha": 0.5,
+          "reg_lambda": 5.0
+        },
+        "lgbm_127": {
+          "reg_alpha": 1.0,
+          "reg_lambda": 10.0
+        }
       },
       "ensemble_method": "rank-average 3 models within seed, then rank-average across seeds"
     },
@@ -723,7 +732,7 @@
     "experiment_id": "EXP-023",
     "parent_hypothesis": "The EXP-022 other_screen_time gain (single-seed +0.00042) should survive the full dual-seed super-ensemble protocol, giving a new reproducible champion.",
     "track": "CONFIRMATION",
-    "status": "running",
+    "status": "running_on_github_actions",
     "configuration": {
       "models": [
         "LGBM_63",
@@ -733,7 +742,8 @@
       "n_splits": 5,
       "num_seeds": 2,
       "features_count": 44,
-      "ensemble_method": "rank-average within seed, then across seeds"
+      "ensemble_method": "rank-average within seed, then across seeds",
+      "compute": "github_actions_ubuntu-latest"
     },
     "baseline_id": "EXP-021",
     "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
@@ -747,7 +757,7 @@
       "submission": "submission_matched_super.csv",
       "results": "pipeline_results.json"
     },
-    "conclusion": "(running 2026-08-17)",
+    "conclusion": "(running on GitHub Actions 2026-08-17, run 32034710221; local run reached seed-42 folds 1-4 then was killed)",
     "next_action": null
   }
 ]
