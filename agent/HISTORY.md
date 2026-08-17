@@ -365,3 +365,14 @@ features (train + test cross-check). Result:
 - The workflow saves OOF/test arrays (train_pipeline.py now persists
   oof_*.npy / test_*.npy) and uploads them as artifacts so diversity,
   blending, and subgroup analyses are possible without retraining.
+
+### Forensics follow-up: weekend is conditionally informative (supports EXP-026)
+- Cross-tab of target rate by (daily_screen_time bin, weekend quintile) shows
+  weekend shifts the rate STRONGLY within every daily bin, e.g. dst (5.5,7.0]:
+  weekend q0 -> 0.335 vs q4 -> 0.968; dst (4.0,5.5]: q0 -> 0.279 vs q4 -> 0.844.
+  So the label depends on BOTH measures (latent "total usage"), and weekend
+  is not a mere noisy copy of daily (this is not contradicted by the near-zero
+  marginal corr of `weekend_extra` — the conditional effect is real).
+- This explains and strengthens the EXP-026 `total_screen = daily + weekend`
+  hypothesis: it exposes the latent the generator uses; trees currently need
+  expensive 2D splits to approximate it.
