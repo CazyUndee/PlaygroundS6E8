@@ -1,0 +1,85 @@
+# Research State — Smartphone Addiction (Kaggle Playground S6E8)
+
+**Last updated**: 2026-08-17 (recovery session)
+**Metric**: OOF ROC-AUC (5-fold stratified CV; dual-seed rank-average super-ensemble)
+
+---
+
+## Current position (after recovery)
+
+The persistent repo was recovered from Hugging Face, but its state was
+**internally inconsistent**:
+
+- `HISTORY.md` recorded the 2026-08-14 session's work (pipeline rebuild +
+  the `other_screen_time` discovery), but
+- `train_pipeline.py` (the reproducible pipeline) was **missing** from the
+  repo, and GOALS/DECISIONS/TODO/RUN_LOG were empty, while
+  RESEARCH_STATE/checkpoint/registry still described the *pre-recovery* state.
+
+So the canonical pipeline was lost a second time, and this session
+reconstructed it (`agent/train_pipeline.py`) from the architecture described
+in HISTORY.md. It is now committed to the persistent repo (GitHub).
+
+## Champion (reproducible, current)
+
+| Experiment | Pipeline | OOF ROC-AUC | Status |
+| :--- | :--- | :---: | :--- |
+| EXP-021 | 42-feature rebuild, dual-seed 5-fold | 0.96402 | reproducible baseline |
+| EXP-022 | + `other_screen_time` (+_isna), **single-seed** | 0.96407 (+0.00042) | **PROMOTED** |
+| EXP-023 | 44-feature, **dual-seed** (42+100) | *(pending — running 2026-08-17)* | in progress |
+
+**Historical champion** (unreproducible): EXP-014 = 0.96448. Its exact script
+was lost before the 2026-08-14 session; treat as a directional reference only.
+
+## Canonical pipeline (44 features)
+
+`agent/train_pipeline.py::build_features`:
+
+1. 9 raw numeric (`age`, 4 screen-time cols, `sleep_hours`, 2 engagement counts, `weekend_screen_time`)
+2. 3 categorical (`gender`, `stress_level`, `academic_work_impact`) — native LightGBM `category` dtype
+3. 12 per-column `_isna` indicators
+4. 3 missingness-count aggregates (total / numeric / categorical)
+5. 15 domain ratio/interaction features (shares of screen time, weekend structure, engagement rates, work/sleep ratio, etc.)
+6. `other_screen_time` = `daily_screen_time - social - gaming - work` (+ its `_isna` flag) — **the promoted hard-constraint residual**
+
+Models: 3 regularized LightGBM configs (num_leaves 63/45/127; reg_alpha
+0.5/0.5/1.0; reg_lambda 5/5/10; lr 0.12; 2000 trees early-stop 100;
+colsample/subsample 0.8; min_child_samples 20). 5-fold stratified CV, seeds
+{42, 100}, rank-average within seed then across seeds.
+
+## Strongest findings
+
+1. **`other_screen_time` is real, non-redundant signal.** The generator obeys
+   `daily_screen_time >= social + gaming + work` with zero violations; the
+   leftover component correlates r≈0.305 with the label and gave +0.00042
+   OOF AUC — the largest single feature gain of the whole program.
+2. **Dual-seed super-ensembling is robust** (D9): +0.00025–0.00027 across
+   two different feature pipelines. Fold-partition boundary noise is real.
+3. **Regularized LightGBM dominates** everything else tried (linear/neural
+   0.92, extra-trees 0.949, HGB 0.961, XGB 0.9634).
+4. **Missingness is MCAR w.r.t. target** (D12): indicators correlate ~0 with
+   the label; the subgroup-AUC drop is an information/difficulty effect.
+5. **No duplicate-row leakage; no significant train/test covariate shift on
+   values** (though missingness *rates* differ a few points — see D16).
+
+## Rejected / not-promoted (durable)
+
+- Subgroup quantile ranks, proportional imputation, interaction screening
+  (all <= +0.00003) — canonical features already suffice.
+- Isotonic calibration, extra-trees, linear/neural hyperplanes, HGB, XGB blend.
+- EXP-019/020 blend weight sweeps: 100:0 EXP-014 control remained best on
+  proxy evidence; no blend promoted.
+
+## Key uncertainties / next questions
+
+1. Does the EXP-022 `other_screen_time` gain survive the **full dual-seed**
+   protocol? (EXP-023 — running.)
+2. Are there **other undiscovered hard generator constraints** with non-trivial
+   residuals (systematic constraint search)?
+3. Does **more seed diversity** (3rd partition seed) keep helping or plateau?
+4. Is the ensemble's value real **prediction diversity** or near-duplicate
+   averaging (correlation re-measurement)?
+5. Is the new champion's subgroup behavior (by missingness/usage decile)
+   consistent with the documented difficulty gradient?
+
+See `TODO.md` for the live queue and `DECISIONS.md` for durable conclusions.

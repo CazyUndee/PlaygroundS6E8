@@ -1,0 +1,50 @@
+{
+  "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
+  "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
+  "last_recovered_from": "huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446",
+  "current_phase": "PHASE_9_RECOVERY_AND_EXP023_DUAL_SEED_44_FEATURES",
+  "canonical_score": null,
+  "note_on_historical_score": "EXP-014 = 0.96448 was the historical champion but its exact script was lost; it is directional only.",
+  "reproducible_baseline": {
+    "exp": "EXP-021",
+    "pipeline": "agent/train_pipeline.py (42 features, dual-seed 5-fold)",
+    "oof_auc": 0.96402
+  },
+  "promoted_feature": {
+    "exp": "EXP-022",
+    "feature": "other_screen_time (+ other_screen_time_isna)",
+    "single_seed_42_oof_auc": 0.96407,
+    "delta_vs_exp021_seed42": 0.00042
+  },
+  "active_experiment": {
+    "id": "EXP-023",
+    "description": "44-feature dual-seed (42+100) 5-fold run of reconstructed train_pipeline.py",
+    "status": "running",
+    "script": "agent/train_pipeline.py",
+    "command": "python -u agent/train_pipeline.py --out submission_matched_super.csv"
+  },
+  "completed_experiments": [
+    "EXP-000..EXP-020 (historical, see experiments_registry.json)",
+    "EXP-021: 42-feature reproducible rebuild, dual-seed (0.96402)",
+    "EXP-022: +other_screen_time single-seed (0.96407, +0.00042) [PROMOTED]"
+  ],
+  "rejected_experiments": [
+    "EXP-001 subgroup quantile ranks",
+    "EXP-003 HistGradientBoosting",
+    "EXP-007 colsample<=0.60",
+    "EXP-011 extra-trees",
+    "EXP-015 isotonic calibration",
+    "EXP-017 linear/neural hyperplanes",
+    "EXP-019/020 blend sweeps (no promotion, proxy evidence)"
+  ],
+  "next_experiments": [
+    "EXP-023 (running): dual-seed 44-feature result + submission",
+    "Systematic generator-constraint search (other hidden sums/bounds)",
+    "DART boosting diversity test",
+    "Third fold-partition seed super-ensemble",
+    "Missingness conjunction flags (cheap, low prior)",
+    "Feature ablation of other_screen_time",
+    "Model/seed prediction diversity re-measurement"
+  ],
+  "resume_note": "Recover memory from RESEARCH_STATE.md/DECISIONS.md/TODO.md; run `python -u agent/train_pipeline.py --out submission_matched_super.csv` to regenerate the champion."
+}

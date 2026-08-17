@@ -1,0 +1,9 @@
+# Normalize line endings for text files; keep CSVs and binaries as-is.
+* text=auto
+
+*.csv text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+train.csv !text !filter !merge !diff
+test.csv !text !filter !merge !diff

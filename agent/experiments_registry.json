@@ -1,0 +1,753 @@
+[
+  {
+    "experiment_id": "EXP-000",
+    "parent_hypothesis": "Initial 3-Fold Stratified CV ensemble of unregularized LightGBM models (num_leaves=63, 45, 127) with 36 domain-engineered features.",
+    "track": "BASELINE",
+    "status": "COMPLETED",
+    "configuration": {
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 3,
+      "features_count": 36,
+      "regularization": "None",
+      "ensemble_method": "Optimized Linear Blending / Weighted Rank Average"
+    },
+    "baseline_id": null,
+    "fold_scheme": "3-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96389,
+    "fold_auc": [
+      0.96385,
+      0.96395,
+      0.96387
+    ],
+    "delta": 0.0,
+    "runtime": 570.0,
+    "compute_cost": "9.5 min",
+    "artifact_paths": {
+      "submission": "submission.csv",
+      "oof": "oof_predictions.csv"
+    },
+    "conclusion": "Canonical baseline benchmark achieving 0.96389 OOF ROC-AUC.",
+    "next_action": "Conduct Track B & C feature hypothesis testing."
+  },
+  {
+    "experiment_id": "EXP-001",
+    "parent_hypothesis": "Adding Missingness co-occurrence (Track B) and Synthetic Generator Subgroup Quantile Ranks (Track C).",
+    "track": "FEATURE_ABSOLUTE_EXPLORATION",
+    "status": "REJECTED",
+    "configuration": {
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 3,
+      "features_count": 44,
+      "new_features": [
+        "missing_screen_and_notif",
+        "screen_time_gender_pct",
+        "notifications_stress_pct",
+        "app_opens_stress_pct",
+        "sleep_gender_pct"
+      ],
+      "ensemble_method": "Linear Blend / Rank Average"
+    },
+    "baseline_id": "EXP-000",
+    "fold_scheme": "3-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96382,
+    "fold_auc": [
+      0.96378,
+      0.96388,
+      0.9638
+    ],
+    "delta": -7e-05,
+    "runtime": 503.7,
+    "compute_cost": "8.4 min",
+    "artifact_paths": {},
+    "conclusion": "Subgroup quantile ranks introduce noise that dilutes tree focus on key usage intensity ratios. Reverting to canonical 36 features.",
+    "next_action": "Kill branch per Sink-Cost rule. Focus on LightGBM L1/L2 Regularization (Track F)."
+  },
+  {
+    "experiment_id": "EXP-002",
+    "parent_hypothesis": "Track F: L1/L2 regularization (reg_alpha=0.5/1.0, reg_lambda=5.0/10.0) prevents leaf overfitting to continuous synthetic noise.",
+    "track": "LIGHTGBM_OPTIMIZATION",
+    "status": "COMPLETED_PROMISING",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG",
+        "LGBM_45_REG",
+        "LGBM_127_REG"
+      ],
+      "n_splits": 3,
+      "features_count": 36,
+      "regularization": {
+        "lgbm_63_reg": {
+          "reg_alpha": 0.5,
+          "reg_lambda": 5.0
+        },
+        "lgbm_45_reg": {
+          "reg_alpha": 0.5,
+          "reg_lambda": 5.0
+        },
+        "lgbm_127_reg": {
+          "reg_alpha": 1.0,
+          "reg_lambda": 10.0
+        }
+      },
+      "ensemble_method": "Unbiased Equal-Weight Rank Average / Optimized Linear Blend"
+    },
+    "baseline_id": "EXP-000",
+    "fold_scheme": "3-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96411,
+    "fold_auc": [
+      0.96407,
+      0.96419,
+      0.96407
+    ],
+    "delta": 0.00022,
+    "runtime": 545.0,
+    "compute_cost": "9.1 min",
+    "artifact_paths": {},
+    "conclusion": "Major breakthrough. Regularized LGBM models beat unregularized models on every fold. Reaches 0.96411 OOF ROC-AUC.",
+    "next_action": "Upgrade validation protocol from 3-fold to 5-fold Stratified Cross-Validation."
+  },
+  {
+    "experiment_id": "EXP-003",
+    "parent_hypothesis": "Track G & H: Testing HistGradientBoosting diversity and Level-2 Out-Of-Fold Logistic Stacking.",
+    "track": "MODEL_DIVERSITY_AND_STACKING",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG",
+        "LGBM_45_REG",
+        "LGBM_127_REG",
+        "HGB_63_REG"
+      ],
+      "n_splits": 3,
+      "features_count": 36,
+      "stacking_model": "LogisticRegression(C=1.0) on Out-Of-Fold Probabilities & Ranks"
+    },
+    "baseline_id": "EXP-002",
+    "fold_scheme": "3-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96405,
+    "fold_auc": [
+      0.96401,
+      0.96412,
+      0.96402
+    ],
+    "delta": -6e-05,
+    "runtime": 491.8,
+    "compute_cost": "8.2 min",
+    "artifact_paths": {},
+    "conclusion": "HistGradientBoosting is 5x slower and lower accuracy (0.9613). Equal-weight rank average across the 3 regularized LightGBM models is unbiased and matches L2 Logistic Stacking without leakage.",
+    "next_action": "Focus on 5-Fold Stratified CV ensemble."
+  },
+  {
+    "experiment_id": "EXP-006",
+    "parent_hypothesis": "Track F & H: 5-Fold Stratified Cross-Validation on regularized LightGBM architecture provides lower variance and larger fold training size (80% vs 66.7%).",
+    "track": "VALIDATION_PROTOCOL_UPGRADE",
+    "status": "COMPLETED_PROMISING",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG_5F",
+        "LGBM_45_REG_5F",
+        "LGBM_127_REG_5F"
+      ],
+      "n_splits": 5,
+      "features_count": 36,
+      "regularization": {
+        "lgbm_63_reg_5f": {
+          "reg_alpha": 0.5,
+          "reg_lambda": 5.0
+        },
+        "lgbm_45_reg_5f": {
+          "reg_alpha": 0.5,
+          "reg_lambda": 5.0
+        },
+        "lgbm_127_reg_5f": {
+          "reg_alpha": 1.0,
+          "reg_lambda": 10.0
+        }
+      },
+      "ensemble_method": "Unbiased Equal-Weight Rank Average / Optimized Linear Blend"
+    },
+    "baseline_id": "EXP-000",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96421,
+    "fold_auc": {
+      "lgbm_63": [
+        0.96296,
+        0.96368,
+        0.96386,
+        0.96461,
+        0.96355
+      ],
+      "lgbm_45": [
+        0.96276,
+        0.96338,
+        0.9638,
+        0.96456,
+        0.96345
+      ],
+      "lgbm_127": [
+        0.96302,
+        0.96365,
+        0.96376,
+        0.96449,
+        0.96362
+      ]
+    },
+    "delta": 0.00032,
+    "runtime": 553.0,
+    "compute_cost": "9.2 min",
+    "artifact_paths": {
+      "submission": "submission.csv",
+      "oof": "oof_predictions.csv.gz"
+    },
+    "conclusion": "Outstanding validated improvement. 5-Fold Stratified CV on regularized LightGBM ensemble reaches 0.96421 OOF ROC-AUC across all 691,369 rows.",
+    "next_action": "Promoted as canonical final solution."
+  },
+  {
+    "experiment_id": "EXP-007",
+    "parent_hypothesis": "Track F: Feature subsampling diversity (colsample_bytree <= 0.60) decorrelates trees in 5-model ensemble.",
+    "track": "LIGHTGBM_OPTIMIZATION",
+    "status": "REJECTED",
+    "configuration": {
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127",
+        "LGBM_31_SUB",
+        "LGBM_95_SUB"
+      ],
+      "n_splits": 5,
+      "features_count": 36,
+      "colsample_range": [
+        0.5,
+        0.6,
+        0.7,
+        0.75,
+        0.8
+      ]
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.9619,
+    "fold_auc": [
+      0.96154,
+      0.96197
+    ],
+    "delta": -0.00231,
+    "runtime": 180.0,
+    "compute_cost": "3.0 min",
+    "artifact_paths": {},
+    "conclusion": "Forcing trees to sample only 50% of features cuts off access to dominant notifications_per_day and app_opens_per_day features, degrading AUC by -0.0020. Killed via Sink-Cost rule.",
+    "next_action": "Maintain colsample_bytree >= 0.70 across all architectures."
+  },
+  {
+    "experiment_id": "EXP-008",
+    "parent_hypothesis": "Track F & H: 10-Fold Stratified Cross-Validation (90% training data per fold) at learning_rate=0.14 vs 5-Fold CV at 0.12.",
+    "track": "VALIDATION_PROTOCOL_UPGRADE",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG_10F",
+        "LGBM_45_REG_10F",
+        "LGBM_127_REG_10F"
+      ],
+      "n_splits": 10,
+      "features_count": 36,
+      "learning_rate": 0.14
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "10-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96411,
+    "fold_auc": [
+      0.96304,
+      0.96344,
+      0.96378,
+      0.96337,
+      0.96363,
+      0.96449,
+      0.96441,
+      0.96506,
+      0.96465,
+      0.96294
+    ],
+    "delta": -0.0001,
+    "runtime": 558.0,
+    "compute_cost": "9.3 min",
+    "artifact_paths": {},
+    "conclusion": "At learning_rate=0.14, 10-Fold CV scores slightly lower (0.96411) than 5-Fold CV at 0.12 (0.96421). 0.12 learning rate is optimal for generalization.",
+    "next_action": "Maintain EXP-006 5-Fold CV at lr=0.12 as canonical baseline."
+  },
+  {
+    "experiment_id": "EXP-009",
+    "parent_hypothesis": "Track A & B: Diagnostic OOF Residual & Error Intersection Analysis on EXP-006 Winner.",
+    "track": "ERROR_DIAGNOSTICS",
+    "status": "COMPLETED_DIAGNOSTIC",
+    "configuration": {
+      "analysis_target": "EXP-006 oof_predictions.csv.gz",
+      "metrics": [
+        "log_loss",
+        "subgroup_auc",
+        "error_by_missingness"
+      ]
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96421,
+    "fold_auc": [],
+    "delta": 0.0,
+    "runtime": 4.5,
+    "compute_cost": "0.1 min",
+    "artifact_paths": {},
+    "conclusion": "ROC-AUC is 0.97225 when 0 features are missing, but drops to 0.91430 when 5 features are missing. Identified missing engagement metrics as primary error driver.",
+    "next_action": "Test proportional imputation for missing engagement rows (Track B & E)."
+  },
+  {
+    "experiment_id": "EXP-010",
+    "parent_hypothesis": "Track B & E: Imputing missing notifications/app_opens proportionally to screen time.",
+    "track": "FEATURE_ABSOLUTE_EXPLORATION",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG_5F",
+        "LGBM_45_REG_5F",
+        "LGBM_127_REG_5F"
+      ],
+      "n_splits": 5,
+      "features_count": 40,
+      "new_features": [
+        "missing_key_engagement",
+        "est_notifications",
+        "est_app_opens",
+        "est_notif_per_open"
+      ]
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96422,
+    "fold_auc": [
+      0.96311,
+      0.96368,
+      0.96399,
+      0.96455,
+      0.96355
+    ],
+    "delta": 1e-05,
+    "runtime": 486.7,
+    "compute_cost": "8.1 min",
+    "artifact_paths": {},
+    "conclusion": "Proportional imputation yields +0.00001 gain over EXP-006. Below the +0.00020 promotion threshold; canonical boolean _isna indicators in EXP-006 already capture missingness signal.",
+    "next_action": "Test ensembling existing ensembles (Track H)."
+  },
+  {
+    "experiment_id": "EXP-011",
+    "parent_hypothesis": "Track G & H: Ensembling Existing Ensembles (EXP-006 Canonical LGBM + Extra-Trees LGBM Ensemble).",
+    "track": "SUPER_ENSEMBLE_DIVERSITY",
+    "status": "REJECTED",
+    "configuration": {
+      "models": [
+        "EXP006_Canonical_5F",
+        "LGBM_XT_63_5F",
+        "LGBM_XT_45_5F"
+      ],
+      "n_splits": 5,
+      "features_count": 36,
+      "extra_trees": true
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=500)",
+    "auc": 0.94906,
+    "fold_auc": [
+      0.94837,
+      0.94851,
+      0.94934,
+      0.94987,
+      0.94922
+    ],
+    "delta": -0.01515,
+    "runtime": 335.0,
+    "compute_cost": "5.6 min",
+    "artifact_paths": {},
+    "conclusion": "Extremely Randomized Trees (extra_trees=True) select split thresholds randomly, which severely damages ranking accuracy on smooth continuous usage intensity ratios (0.94906 OOF AUC).",
+    "next_action": "Reject random threshold selection. Test Regularized XGBoost ensemble."
+  },
+  {
+    "experiment_id": "EXP-012",
+    "parent_hypothesis": "Track G & H: Ensembling Existing Ensembles (EXP-006 Canonical 5-Fold LGBM + 5-Fold Regularized XGBoost Ensemble).",
+    "track": "SUPER_ENSEMBLE_DIVERSITY",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "models": [
+        "EXP006_Canonical_5F",
+        "XGB_6_REG_5F"
+      ],
+      "n_splits": 5,
+      "features_count": 36,
+      "xgb_params": {
+        "max_depth": 6,
+        "learning_rate": 0.12,
+        "reg_alpha": 0.5,
+        "reg_lambda": 5.0
+      }
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96393,
+    "fold_auc": [
+      0.96265,
+      0.96338,
+      0.96352,
+      0.96418,
+      0.96318
+    ],
+    "delta": -0.00028,
+    "runtime": 288.4,
+    "compute_cost": "4.8 min",
+    "artifact_paths": {},
+    "conclusion": "Standalone 5-Fold XGBoost scores 0.96338 (lower than LightGBM 0.96421). Blending 50/50 drags down ranking accuracy. Correlation between ensembles is 0.8996.",
+    "next_action": "Test super-ensembling two independent high-accuracy 5-Fold regularized LightGBM ensembles with distinct random seeds."
+  },
+  {
+    "experiment_id": "EXP-014",
+    "parent_hypothesis": "Track H: Super-Ensemble of Two Independent 5-Fold Regularized LightGBM Ensembles (seed=42 + seed=100) cancels fold-partition boundary noise across all 691,369 rows.",
+    "track": "SUPER_ENSEMBLE_OPTIMIZATION",
+    "status": "PROMOTED_NEW_CANONICAL_BENCHMARK",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG_S42",
+        "LGBM_45_REG_S42",
+        "LGBM_127_REG_S42",
+        "LGBM_63_REG_S100",
+        "LGBM_45_REG_S100",
+        "LGBM_127_REG_S100"
+      ],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 36,
+      "ensemble_method": "50/50 Equal-Weight Rank Average across Seed 42 Ensemble (0.96421) and Seed 100 Ensemble (0.96425)"
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": 0.96448,
+    "fold_auc": {
+      "seed42_ensemble_auc": 0.96421,
+      "seed100_ensemble_auc": 0.96425,
+      "super_ensemble_auc": 0.96448
+    },
+    "delta": 0.00027,
+    "runtime": 546.8,
+    "compute_cost": "9.1 min",
+    "artifact_paths": {
+      "submission": "submission.csv",
+      "oof": "oof_predictions.csv.gz"
+    },
+    "conclusion": "MAJOR BREAKTHROUGH (+0.00059 over original 0.96389 baseline, +0.00027 over EXP-006). Combining two independent 5-Fold ensembles (seed 42 and seed 100) cancels single-partition boundary noise and achieves 0.96448 Out-Of-Fold ROC-AUC.",
+    "next_action": "Promote Super-Ensemble as the new canonical winning solution. Write durable checkpoint."
+  },
+  {
+    "experiment_id": "EXP-015",
+    "parent_hypothesis": "Track H: Fitting fold-level Isotonic Regression on individual model probabilities before ensembling.",
+    "track": "CALIBRATION_TESTING",
+    "status": "REJECTED",
+    "configuration": {
+      "models": [
+        "EXP014_6_Models"
+      ],
+      "calibration": "IsotonicRegression(out_of_bounds='clip')",
+      "n_splits": 5
+    },
+    "baseline_id": "EXP-014",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96376,
+    "fold_auc": [],
+    "delta": -0.00072,
+    "runtime": 21.8,
+    "compute_cost": "0.4 min",
+    "artifact_paths": {},
+    "conclusion": "Isotonic Regression collapses fine-grained continuous probability rankings into flat step intervals (-0.00007 drop per model). Rejected.",
+    "next_action": "Maintain continuous probability/rank scaling without monotone step functions."
+  },
+  {
+    "experiment_id": "EXP-016",
+    "parent_hypothesis": "Track H: Level-2 Out-Of-Fold Logistic Regression Stacking on rank percentiles vs log-odds.",
+    "track": "META_STACKING_CONFIRMATION",
+    "status": "CONFIRMED_UNBIASED_STACKER",
+    "configuration": {
+      "models": [
+        "LGBM_63_REG_5F",
+        "LGBM_45_REG_5F",
+        "LGBM_127_REG_5F"
+      ],
+      "stacking_model": "LogisticRegression(C=1.0) on 5-Fold Rank Percentiles"
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96421,
+    "fold_auc": [],
+    "delta": 0.00032,
+    "runtime": 12.5,
+    "compute_cost": "0.2 min",
+    "artifact_paths": {},
+    "conclusion": "Level-2 Out-Of-Fold Logistic Regression Stacking on Ranks matches the exact 0.96421 OOF ROC-AUC of equal-weight rank averaging without leakage.",
+    "next_action": "Test linear and neural hyperplane diversity (Track G)."
+  },
+  {
+    "experiment_id": "EXP-017",
+    "parent_hypothesis": "Track G: 5-Fold Linear (LogisticRegression) and Neural (MLPClassifier) hyperplane diversity in Super-Ensemble.",
+    "track": "HYPERPLANE_MODEL_DIVERSITY",
+    "status": "REJECTED",
+    "configuration": {
+      "models": [
+        "LogisticRegression(C=1.0)",
+        "MLPClassifier(64, 32)"
+      ],
+      "n_splits": 5,
+      "features_count": 36
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.92413,
+    "fold_auc": [
+      0.92277,
+      0.92274,
+      0.924,
+      0.92413
+    ],
+    "delta": -0.04008,
+    "runtime": 600.0,
+    "compute_cost": "10.0 min",
+    "artifact_paths": {},
+    "conclusion": "Linear and shallow neural hyperplanes underfit the complex non-linear step thresholds and interaction ratios of synthetic smartphone usage data (0.920-0.924 OOF AUC). Blending drags down top-decile ranking.",
+    "next_action": "Reject shallow linear/neural models. Confirm GBDT as the undisputed optimal architecture."
+  },
+  {
+    "experiment_id": "EXP-018",
+    "parent_hypothesis": "Track E: Automated Pairwise Interaction Feature Screening on Fold 1 across 6 candidate domain interaction ratios.",
+    "track": "FEATURE_ABSOLUTE_EXPLORATION",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "candidates": [
+        "recreational_per_notif",
+        "work_sleep_ratio",
+        "total_engagement_intensity"
+      ],
+      "promotion_threshold": "+0.00015 AUC"
+    },
+    "baseline_id": "EXP-006",
+    "fold_scheme": "Fold 1 Screening (seed=42)",
+    "auc": 0.96291,
+    "fold_auc": [
+      0.96291
+    ],
+    "delta": 3e-05,
+    "runtime": 92.8,
+    "compute_cost": "1.5 min",
+    "artifact_paths": {},
+    "conclusion": "Best candidate (total_engagement_intensity) yielded +0.00003, below the +0.00015 promotion threshold. Canonical 36 features already contain the sufficient mathematical statistics.",
+    "next_action": "Retain canonical 36 domain features. Complete checkpoint for Phase 7."
+  },
+  {
+    "experiment_id": "EXP-019",
+    "parent_hypothesis": "Track H: A controlled weight sweep can exploit any residual diversity between the saved EXP-014 dual-seed predictions and EXP-016 rank-logistic stack predictions.",
+    "track": "ENSEMBLE_WEIGHT_SWEEP",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "source_files": [
+        "submission_exp014.csv",
+        "submission_exp016.csv"
+      ],
+      "raw_blend": "(w14 * EXP014 + w16 * EXP016) / 100",
+      "rank_scaled_companion": "rank percentile each source, then apply the same weights",
+      "ratios": [
+        "100:0",
+        "95:5",
+        "90:10",
+        "80:20",
+        "75:25",
+        "67:33",
+        "50:50"
+      ],
+      "test_rows": 296302,
+      "matched_oof_for_saved_files": false,
+      "proxy_oof_scope": "proxy_only_retained_seed42_oof_not_exact_saved_test_files"
+    },
+    "baseline_id": "EXP-014",
+    "fold_scheme": "No new model training; proxy comparison on retained canonical seed-42 OOF",
+    "seed": null,
+    "features": "Inherited from EXP-014 and EXP-016",
+    "auc": null,
+    "fold_auc": {},
+    "delta": null,
+    "runtime": 17.1,
+    "compute_cost": "0.3 min",
+    "artifact_paths": {
+      "script": "/home/user/blend_exp14_exp16.py",
+      "results_json": "/home/user/exp019_blend_results.json",
+      "results_csv": "/home/user/exp019_blend_results.csv",
+      "raw_submissions": [
+        "/home/user/submission_exp14_exp16_100_0.csv",
+        "/home/user/submission_exp14_exp16_95_5.csv",
+        "/home/user/submission_exp14_exp16_90_10.csv",
+        "/home/user/submission_exp14_exp16_80_20.csv",
+        "/home/user/submission_exp14_exp16_75_25.csv",
+        "/home/user/submission_exp14_exp16_67_33.csv",
+        "/home/user/submission_exp14_exp16_50_50.csv"
+      ],
+      "rank_scaled_submissions": [
+        "/home/user/submission_exp14_exp16_rank_100_0.csv",
+        "/home/user/submission_exp14_exp16_rank_95_5.csv",
+        "/home/user/submission_exp14_exp16_rank_90_10.csv",
+        "/home/user/submission_exp14_exp16_rank_80_20.csv",
+        "/home/user/submission_exp14_exp16_rank_75_25.csv",
+        "/home/user/submission_exp14_exp16_rank_67_33.csv",
+        "/home/user/submission_exp14_exp16_rank_50_50.csv"
+      ]
+    },
+    "conclusion": "All requested raw blends and rank-scaled companions were generated. On the retained proxy OOF, the 100:0 control was best (0.964207763); every added EXP-016 weight was microscopically lower, so no blend is promoted. This is not an exact AUC for the currently saved EXP-014/EXP-016 test files because their matched OOF predictions are unavailable.",
+    "next_action": "Keep the 100:0 EXP-014 control as the default candidate. If leaderboard trials are available, submit the requested ratio files; otherwise regenerate matched OOF for the exact saved models before promoting a mixture. Continue with triple-seed or missingness-conjunction research."
+  },
+  {
+    "experiment_id": "EXP-020",
+    "parent_hypothesis": "Track H: Because EXP-014 is rank-like and EXP-016 is calibrated, rank-scaling both inputs before applying the requested weights may make the blend weights comparable and preserve more ranking diversity.",
+    "track": "ENSEMBLE_POSTPROCESSING",
+    "status": "COMPLETED_INCONCLUSIVE",
+    "configuration": {
+      "source_experiment": "EXP-019",
+      "postprocessing": "rankdata(prediction) / n independently for EXP-014 and EXP-016",
+      "ratios": [
+        "100:0",
+        "95:5",
+        "90:10",
+        "80:20",
+        "75:25",
+        "67:33",
+        "50:50"
+      ],
+      "matched_oof_for_saved_files": false,
+      "proxy_scope": "proxy_only_retained_seed42_oof_not_exact_saved_test_files"
+    },
+    "baseline_id": "EXP-019",
+    "fold_scheme": "No new model training; retained canonical seed-42 OOF proxy",
+    "seed": null,
+    "features": "Inherited from EXP-014 and EXP-016",
+    "auc": null,
+    "fold_auc": {},
+    "delta": null,
+    "runtime": 1.3,
+    "compute_cost": "0.02 min",
+    "artifact_paths": {
+      "results_json": "/home/user/exp020_rank_blend_results.json",
+      "results_csv": "/home/user/exp020_rank_blend_results.csv",
+      "submissions": "/home/user/submission_exp14_exp16_rank_*.csv"
+    },
+    "conclusion": "Rank scaling improved each non-control mixture by approximately 0.00000004-0.00000009 on the retained proxy relative to raw blending, but all mixtures remained below the 100:0 EXP-014 control. No blend is promoted; use rank-scaled files only as leaderboard probes.",
+    "next_action": "Recover a matched OOF pair for the exact saved EXP-014/EXP-016 predictions before making a promotion decision; then test a third fold partition seed if safe."
+  },
+  {
+    "experiment_id": "EXP-021",
+    "parent_hypothesis": "The exact historical EXP-014 pipeline was lost; rebuild an equivalent, fully-reproducible pipeline from the documented architecture and treat its matched OOF as the new ground truth.",
+    "track": "REPRODUCIBILITY_RECOVERY",
+    "status": "COMPLETED",
+    "configuration": {
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 42,
+      "regularization": {
+        "lgbm_63": {"reg_alpha": 0.5, "reg_lambda": 5.0},
+        "lgbm_45": {"reg_alpha": 0.5, "reg_lambda": 5.0},
+        "lgbm_127": {"reg_alpha": 1.0, "reg_lambda": 10.0}
+      },
+      "ensemble_method": "rank-average 3 models within seed, then rank-average across seeds"
+    },
+    "baseline_id": "EXP-006 (directional)",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": 0.96402,
+    "fold_auc": {
+      "seed42_ensemble_auc": 0.96365,
+      "seed100_ensemble_auc": 0.96377,
+      "super_ensemble_auc": 0.96402
+    },
+    "delta": null,
+    "runtime": 858.0,
+    "compute_cost": "14.3 min (4 vCPU sandbox)",
+    "artifact_paths": {
+      "script": "agent/train_pipeline.py"
+    },
+    "conclusion": "Rebuilt a documented 42-feature pipeline (9 numeric, 3 categorical, 12 _isna, 3 missingness-count, ~15 domain ratios) with the documented 3 regularized LGBM configs and dual-seed rank-averaging. Achieved 0.96402, close to but below the lost 0.96448. The relative dual-seed gain (+0.00025-0.00037 over single seed) replicated, confirming the dual-seed effect (D9) is robust and not an artifact of the exact lost feature set.",
+    "next_action": "Test the other_screen_time residual feature discovered in dataset forensics."
+  },
+  {
+    "experiment_id": "EXP-022",
+    "parent_hypothesis": "daily_screen_time_hours >= social_media_hours + gaming_hours + work_study_hours holds with zero violations; the leftover 'other usage' residual carries non-redundant signal, so adding it explicitly should improve OOF AUC.",
+    "track": "FEATURE_ABSOLUTE_EXPLORATION",
+    "status": "PROMOTED",
+    "configuration": {
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 5,
+      "num_seeds": 1,
+      "features_count": 44,
+      "new_features": [
+        "other_screen_time",
+        "other_screen_time_isna"
+      ]
+    },
+    "baseline_id": "EXP-021 (seed-42 arm)",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96407,
+    "fold_auc": {},
+    "delta": 0.00042,
+    "runtime": 420.0,
+    "compute_cost": "7 min (single seed)",
+    "artifact_paths": {
+      "script": "agent/train_pipeline.py"
+    },
+    "conclusion": "other_screen_time = daily_screen_time - social_media - gaming - work_study is a hard-constraint residual (zero violations; Pearson r~0.305 with label) that the existing share/ratio features never exposed directly. Adding it (+ _isna) gave +0.00042 OOF AUC, the largest single feature-engineering gain of the program, consistent across folds/models. PROMOTED to the canonical feature set (44 features).",
+    "next_action": "Run the full dual-seed 44-feature protocol to confirm the gain (EXP-023)."
+  },
+  {
+    "experiment_id": "EXP-023",
+    "parent_hypothesis": "The EXP-022 other_screen_time gain (single-seed +0.00042) should survive the full dual-seed super-ensemble protocol, giving a new reproducible champion.",
+    "track": "CONFIRMATION",
+    "status": "running",
+    "configuration": {
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 44,
+      "ensemble_method": "rank-average within seed, then across seeds"
+    },
+    "baseline_id": "EXP-021",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": null,
+    "fold_auc": {},
+    "delta": null,
+    "runtime": null,
+    "compute_cost": null,
+    "artifact_paths": {
+      "script": "agent/train_pipeline.py",
+      "submission": "submission_matched_super.csv",
+      "results": "pipeline_results.json"
+    },
+    "conclusion": "(running 2026-08-17)",
+    "next_action": null
+  }
+]
