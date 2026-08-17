@@ -10,6 +10,7 @@ on:
           - exp023_canonical
           - screen
           - tune
+          - ablate
           - forensics
           - all
         default: exp023_canonical
@@ -141,6 +142,42 @@ jobs:
         with:
           name: tune-results
           path: artifacts/tune/
+          retention-days: 90
+
+  ablate:
+    if: ${{ inputs.task == 'ablate' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Feature-group ablation (lgbm_63, seed-42, 5-fold)
+        run: |
+          python -u exp_ablate.py 2>&1 | tee ablate_run.log
+          echo "=== tail ==="
+          tail -20 ablate_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/ablate
+          cp ablate_results.json artifacts/ablate/
+          cp ablate_run.log artifacts/ablate/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ablate-results
+          path: artifacts/ablate/
           retention-days: 90
 
   forensics:
