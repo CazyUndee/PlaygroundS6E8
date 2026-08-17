@@ -428,3 +428,18 @@ features (train + test cross-check). Result:
   then promote winners into build_features and re-run dual-seed EXP-027.
 - Note: the queued age screen (exp024) was auto-cancelled when the workflow
   file changed; re-trigger it after the current screen queue.
+
+### EXP-026 screen results: combination features are NEUTRAL (durable)
+- total_screen (daily+weekend): lgbm_63 OOF 0.96377 vs baseline 0.96380
+  (delta -0.00003; fold deltas ~0).
+- sm_weekend (social+weekend, univariate AUC 0.915 vs daily 0.889):
+  lgbm_63 OOF 0.96377 vs 0.96380 (delta -0.00003; fold deltas -0.00007 /
+  +0.00002 / +0.00003 / -0.00006 / -0.00015).
+- **Conclusion: even a LARGE univariate-AUC advantage (+0.026) does not
+  transfer to model gain when the components are already raw features — the
+  trees' multi-dimensional splits already find the combination.** The
+  feature-combination direction is exhausted; do not promote total_screen /
+  sm_weekend / all3 (pending) without a genuinely different mechanism.
+- Remaining hope from this batch: the age encoding (independent per-value
+  +0.06 signal, NOT a combination) and possibly app_opens/sleep per-value
+  encodings.
