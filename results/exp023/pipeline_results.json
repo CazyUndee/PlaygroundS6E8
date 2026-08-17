@@ -1,0 +1,120 @@
+{
+  "seeds": [
+    42,
+    100
+  ],
+  "n_splits": 5,
+  "n_features": 44,
+  "features": [
+    "age",
+    "daily_screen_time_hours",
+    "social_media_hours",
+    "gaming_hours",
+    "work_study_hours",
+    "sleep_hours",
+    "notifications_per_day",
+    "app_opens_per_day",
+    "weekend_screen_time",
+    "gender",
+    "stress_level",
+    "academic_work_impact",
+    "age_isna",
+    "daily_screen_time_hours_isna",
+    "social_media_hours_isna",
+    "gaming_hours_isna",
+    "work_study_hours_isna",
+    "sleep_hours_isna",
+    "notifications_per_day_isna",
+    "app_opens_per_day_isna",
+    "weekend_screen_time_isna",
+    "gender_isna",
+    "stress_level_isna",
+    "academic_work_impact_isna",
+    "missing_count_total",
+    "missing_count_numeric",
+    "missing_count_categorical",
+    "social_media_share",
+    "gaming_share",
+    "work_study_share",
+    "entertainment_share",
+    "weekend_weekday_ratio",
+    "weekend_extra_screen",
+    "screen_sleep_ratio",
+    "sleep_awake_share",
+    "notifications_per_screen_hour",
+    "app_opens_per_screen_hour",
+    "notifications_per_app_open",
+    "engagement_intensity",
+    "work_sleep_ratio",
+    "app_opens_per_notification",
+    "total_active_hours",
+    "other_screen_time",
+    "other_screen_time_isna"
+  ],
+  "seed_results": {
+    "42": {
+      "oof_auc": 0.9643486047860079,
+      "fold_aucs": {
+        "lgbm_63": [
+          0.963134713733087,
+          0.9636545560000314,
+          0.9638550987567295,
+          0.9646802273471152,
+          0.9637483293517244
+        ],
+        "lgbm_45": [
+          0.9633326901161088,
+          0.9638306439938222,
+          0.9639821965418753,
+          0.9648535076798974,
+          0.9638599394546926
+        ],
+        "lgbm_127": [
+          0.9630199842706284,
+          0.9636021418454876,
+          0.9636937919589489,
+          0.9647975011096459,
+          0.9636515871147137
+        ]
+      },
+      "per_model_oof_aucs": {
+        "lgbm_63": 0.9638049620054627,
+        "lgbm_45": 0.9639692353739244,
+        "lgbm_127": 0.9637513792817597
+      }
+    },
+    "100": {
+      "oof_auc": 0.9643883296268616,
+      "fold_aucs": {
+        "lgbm_63": [
+          0.9639075491931748,
+          0.9636811658571558,
+          0.9643437190517995,
+          0.9641268819154423,
+          0.963459624973765
+        ],
+        "lgbm_45": [
+          0.9640835164164396,
+          0.9636989604807645,
+          0.9644493663677309,
+          0.9644734829224215,
+          0.9634945754576214
+        ],
+        "lgbm_127": [
+          0.9638308977134145,
+          0.9634183098222995,
+          0.9641033988985737,
+          0.9639941264371069,
+          0.9632102493095797
+        ]
+      },
+      "per_model_oof_aucs": {
+        "lgbm_63": 0.9639022430349868,
+        "lgbm_45": 0.9640412117298027,
+        "lgbm_127": 0.9637095378620817
+      }
+    }
+  },
+  "super_ensemble_oof_auc": 0.96465593497037,
+  "wallclock_seconds": 890.4101958274841
+}

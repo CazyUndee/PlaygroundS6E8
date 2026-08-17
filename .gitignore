@@ -17,7 +17,7 @@ oof_*.csv
 oof_*.csv.gz
 submission_*.csv
 !sample_submission.csv
-pipeline_results.json
+/pipeline_results.json
 debug*.py
 experiment_tmp*.py
 plot*.png
