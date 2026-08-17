@@ -52,6 +52,7 @@ def add_age(df):
 FEATURES = {
     "total_screen": ("total_screen", "total_screen_isna"),
     "age": ("age_cat", "age_even", "age_high_band"),
+    "both": ("total_screen", "total_screen_isna", "age_cat", "age_even", "age_high_band"),
 }
 
 
@@ -68,10 +69,10 @@ def main():
     base_test = build_features(test)
     feats = feature_columns() + list(FEATURES[args.feature])
 
-    if args.feature == "total_screen":
+    if args.feature in ("total_screen", "both"):
         base = add_total_screen(base)
         base_test = add_total_screen(base_test)
-    elif args.feature == "age":
+    if args.feature in ("age", "both"):
         base = add_age(base)
         base_test = add_age(base_test)
 
