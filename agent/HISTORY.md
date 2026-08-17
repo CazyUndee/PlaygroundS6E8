@@ -458,3 +458,13 @@ features (train + test cross-check). Result:
   Remaining value is more likely in (a) hyperparameter tuning of the model
   configs, (b) validation/robustness work, or (c) accepting EXP-023 (0.96466)
   as the champion.** The tune scan is running on GH Actions.
+
+### other_screen_time characterization (champion's key feature)
+- Univariate AUC 0.765 (min 0, max 11.53, mean 1.34, std 1.48).
+- NOT driven by messaging: corr with notifications_per_day 0.019 and
+  app_opens_per_day 0.037 (both ~0). corr with dst 0.586 (it is a large
+  component of daily screen time). No age interaction (mean 1.33 vs 1.38).
+- Target rate by its quintiles: 0.43 / 0.57 / 0.72 / 0.89 / 0.93 — a strong
+  monotonic gradient. Its value comes from isolating the "other" usage
+  component that dst aggregates; already promoted and contributing
+  +0.00042 (single-seed) / +0.00064 (dual-seed).
