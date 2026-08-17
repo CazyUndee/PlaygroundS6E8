@@ -10,6 +10,7 @@ on:
           - exp023_canonical
           - exp026_total_screen
           - exp024_age_screen
+          - forensics
           - all
         default: exp023_canonical
 
@@ -96,6 +97,38 @@ jobs:
         with:
           name: exp026-results
           path: artifacts/exp026/
+          retention-days: 90
+
+  forensics:
+    if: ${{ inputs.task == 'forensics' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run reproducible forensics
+        run: |
+          mkdir -p artifacts/forensics
+          for f in analysis/forensics_*.py; do
+            name=$(basename "$f" .py)
+            python "$f" > "artifacts/forensics/${name}.out" 2>&1 && echo "OK $name" || echo "FAILED $name"
+          done
+
+      - name: Upload forensics outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: forensics-outputs
+          path: artifacts/forensics/
           retention-days: 90
 
   exp024_age_screen:
