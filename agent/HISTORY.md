@@ -443,3 +443,18 @@ features (train + test cross-check). Result:
 - Remaining hope from this batch: the age encoding (independent per-value
   +0.06 signal, NOT a combination) and possibly app_opens/sleep per-value
   encodings.
+
+### EXP-024 age screen: NEGATIVE (all four screens neutral or worse)
+- age_cat + age_even + age_high_band: lgbm_63 OOF 0.96352 vs baseline
+  0.96380, delta -0.00029, every fold negative (-0.00018 to -0.00036).
+- **The feature direction is now exhausted, decisively:** total_screen
+  (-0.00003), sm_weekend (-0.00003), all3 (0.00000), age (-0.00029). Even a
+  real, independent per-value signal (age) does NOT help beyond the raw
+  numeric feature — the trees already exploit it, and extra encodings just
+  add overfitting capacity. This mirrors EXP-018/EXP-001/EXP-010: the
+  canonical 44 features already capture the sufficient statistics.
+- **Practical implication (durable): stop adding features to this pipeline
+  without a mechanism that is genuinely missing from the raw features.
+  Remaining value is more likely in (a) hyperparameter tuning of the model
+  configs, (b) validation/robustness work, or (c) accepting EXP-023 (0.96466)
+  as the champion.** The tune scan is running on GH Actions.

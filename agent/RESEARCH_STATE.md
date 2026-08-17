@@ -37,6 +37,16 @@ program. Subgroup difficulty gradient reproduced on the champion
 (0-missing AUC 0.973 -> 9-missing 0.828); ensemble models are near-duplicates
 (corr 0.994-0.997), so extra seeds/configs add little.
 
+## Feature-engineering direction is EXHAUSTED (as of 2026-08-17)
+All four screens on the champion (lgbm_63, seed-42, 5-fold, vs 0.96380
+baseline) were neutral or negative: total_screen -0.00003, sm_weekend
+-0.00003, all3 0.00000, age encodings -0.00029. Even large univariate AUC
+advantages (+0.026) and a real independent per-value signal (age) do not
+help — the 44 canonical features already capture the sufficient statistics.
+Do not add more features without a mechanism genuinely missing from the raw
+inputs. Remaining value: hyperparameter tuning (running on GH Actions),
+validation/robustness work, or accepting EXP-023 as the champion.
+
 ## Canonical pipeline (44 features)
 
 `agent/train_pipeline.py::build_features`:

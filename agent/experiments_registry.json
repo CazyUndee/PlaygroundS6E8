@@ -789,7 +789,7 @@
         "total_screen = daily+weekend (OOF 0.96377, delta -0.00003)",
         "sm_weekend = social+weekend (OOF 0.96377, delta -0.00003)",
         "all3 = daily+social+weekend (OOF 0.96380, delta -0.00000)",
-        "age encoding (pending)"
+        "age encoding (OOF 0.96352, delta -0.00029) [REJECTED]"
       ]
     },
     "baseline_id": "EXP-023",
