@@ -381,3 +381,9 @@ features (train + test cross-check). Result:
   sleep bin (e.g. app_opens q0: 0.677 vs 0.742; sleep 4.5-6h: 0.663 vs 0.737),
   on top of the already-shown independence from screen time and categoricals.
   Strong support for EXP-024 (explicit age encoding).
+- **Old open question resolved: `notifications_per_day` and
+  `app_opens_per_day` are INDEPENDENT generator draws** (Pearson r = 0.012;
+  mean app_opens ~102 across every notifications octile; a/n ratio is
+  noise). The `notifications_per_app_open` / `app_opens_per_notification`
+  ratio features are therefore noise features — candidates for ablation in a
+  simplification pass, though they likely cost nothing.
