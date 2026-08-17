@@ -283,3 +283,39 @@ features (train + test cross-check). Result:
 - **Lesson:** a feature with ~0 linear correlation can still hide a large
   nonlinear/independent effect. Check target-rate by distinct value before
   dismissing low-correlation features in synthetic data.
+
+### Forensics: the same applies to count/sleep features (new)
+- The pattern generalizes beyond age. Single-feature AUCs (rank):
+  app_opens_per_day 0.541, sleep_hours 0.527, age 0.502,
+  notifications_per_day 0.492 — all "low" vs daily_screen_time 0.890, but
+  all have NON-monotonic target-rate profiles:
+  * app_opens deciles: 0.654 / 0.734 / 0.673 / 0.645 / 0.726 / 0.716 /
+    0.657 / 0.763 / 0.770 / 0.755 — a U/oscillating shape, high deciles
+    (7-9) clearly elevated. Within a fixed screen-time bin, higher
+    app_opens -> higher rate (0.492 -> 0.588).
+  * sleep bins: (4.5,5]->0.662, (6,6.5]->0.725, (8,8.5]->0.745 — roughly
+    more sleep -> higher rate but non-monotonic (dip at 7-8h).
+  * notifications: within fixed screen time, MORE notifications -> LOWER
+    rate (0.551 -> 0.507); the existing n_per_screen ratio captures this
+    (its single AUC is 0.264, monotonic).
+- **Implication:** these are already exposed as raw numeric features and the
+  trees CAN split on them (app_opens/sleep have stronger marginal AUC than
+  age), so they are probably already partially used. Age is the weakest
+  marginal (0.502) yet has the cleanest independent nonlinear effect, so age
+  is the best first target for an explicit-encoding test (EXP-024). If age
+  encoding works, the same treatment (target-encoding / categorical / bins)
+  for app_opens and sleep becomes the natural follow-up (EXP-025 candidate).
+
+### Forensics: categoricals do NOT moderate the screen-time signal (new)
+- corr(daily_screen_time, target) is 0.608-0.618 across EVERY gender /
+  stress_level / academic_work_impact group — essentially identical.
+- The dst-decile -> target-rate curve is identical across all groups
+  (decile 0 ~0.28, 1 ~0.46, 2 ~0.81, 3 ~0.985, 4 ~0.999).
+- The label is therefore a sharp STEP/THRESHOLD function of screen time
+  (top 2 deciles ~98-100% rate), and the categoricals neither shift the
+  screen-time distribution nor moderate its effect.
+- **Durable conclusions:** (1) interaction features between screen time and
+  categoricals are very unlikely to help (confirms EXP-018/EXP-001);
+  (2) the sharp threshold explains why linear/neural models underfit to
+  ~0.92 (EXP-017) while trees excel; (3) categoricals can be treated as
+  essentially non-informative for this task.

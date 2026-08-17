@@ -88,3 +88,15 @@ able to recover the full research from the repo alone.
 over-interpreted.** Train/test missingness-rate differences reach p<1e-200
 yet are only a few percentage points in absolute terms and, combined with
 D12, are unlikely to materially bias OOF-vs-leaderboard comparisons.
+
+**D17 — The label is a sharp threshold function of screen time, and the
+categoricals are effectively non-informative.** dst-decile -> target rate is
+~0.28/0.46/0.81/0.985/0.999, and corr(dst, target) is ~0.61 within every
+categorical group. Categorical main effects and screen-time×categorical
+interactions are therefore low-value; do not re-invest in them. This also
+explains the linear/neural underfit (0.92) vs trees (~0.964).
+
+**D18 — "Low linear correlation" does not mean "no signal" in this data.**
+age (r≈0.004), app_opens (r≈0.064), and sleep (r≈0.042) all carry real
+nonlinear per-value effects. Always inspect target-rate by value/bins before
+concluding a feature is useless.

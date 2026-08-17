@@ -19,4 +19,10 @@ Execution facts only (not narrative — see HISTORY.md).
   configs, dual-seed 5-fold). Smoke test on 20k rows: OK (AUC 0.937, 100
   trees).
 - 13:12 — Launched full dual-seed pipeline (EXP-023) in background.
-- (pending) — EXP-023 completion + result.
+- 13:56 — EXP-023 seed-42 fold 1 complete: lgbm_63=0.96313, lgbm_45=0.96334,
+  lgbm_127=0.96302 (Windows host ~10x slower than the Linux sandbox).
+- ~14:00 — Forensics (constraint search, signal structure, age nonlinearity,
+  count/sleep nonlinearity) completed; findings committed to GitHub.
+- ~14:45 — Launched EXP-024 age-encoding quick A/B read (15% subsample,
+  3-fold, 3 models, 2 arms) in parallel with EXP-023.
+- (pending) — EXP-023 seed-42 full + seed-100; EXP-024 result.

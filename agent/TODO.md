@@ -18,7 +18,14 @@ command sequence — let evidence decide.
       ~0.64). Hypothesis: raw numeric age is under-split by the trees.
       Test, under identical seed-42 folds vs the 44-feature baseline
       (0.96407): (a) age as native categorical, (b) one-hot age, (c) add
-      `age_even` + high-age flags. Cheap single-seed read first.
+      `age_even` + high-age flags. *(quick subsample A/B running — EXP-024)*
+
+- [ ] **EXP-025 — count/sleep nonlinearity (follow-up if EXP-024 works)**:
+      `app_opens_per_day` (AUC 0.541) and `sleep_hours` (0.527) also have
+      non-monotonic target-rate profiles. If explicit age encoding helps,
+      apply the same treatment (OOF target-encode / categorical / bins) to
+      app_opens and sleep, and possibly a `notifications` inverse-rate
+      encoding.
 
 ## P1 (strong hypotheses, quick reads)
 
