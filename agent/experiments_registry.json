@@ -772,5 +772,35 @@
     },
     "conclusion": "NEW REPRODUCIBLE CHAMPION. Dual-seed 44-feature super-ensemble reaches 0.96466 OOF ROC-AUC, beating the historical (lost-pipeline) EXP-014 0.96448. The other_screen_time gain at dual-seed is +0.00064 over the 42-feature EXP-021 rebuild (larger than the +0.00042 single-seed estimate, confirming EXP-022). Seed 42 = 0.96435, seed 100 = 0.96439. Fully reproducible on GitHub Actions (15 min, run 32034710221); fold-level AUCs match the local partial run exactly. Subgroup difficulty gradient reproduced (0-missing AUC 0.973 vs 9-missing 0.828).",
     "next_action": "Screen EXP-026 (total_screen = daily + weekend) and EXP-024 (age encoding) on GitHub Actions; promote winners into build_features and re-run the dual-seed protocol."
+  },
+  {
+    "experiment_id": "EXP-026",
+    "parent_hypothesis": "Explicitly exposing combinations of screen-time features (total_screen = daily+weekend; sm_weekend = social+weekend; all3) should help because their univariate AUCs (0.90-0.92) beat daily alone (0.889) — the label depends on a latent total-usage that trees currently approximate with 2D splits.",
+    "track": "FEATURE_ABSOLUTE_EXPLORATION",
+    "status": "COMPLETED",
+    "configuration": {
+      "models": ["lgbm_63"],
+      "n_splits": 5,
+      "seed": 42,
+      "baseline": "EXP-023 lgbm_63 (OOF 0.96380)",
+      "tested_features": [
+        "total_screen = daily+weekend (OOF 0.96377, delta -0.00003)",
+        "sm_weekend = social+weekend (pending)",
+        "all3 = daily+social+weekend (pending)"
+      ]
+    },
+    "baseline_id": "EXP-023",
+    "fold_scheme": "5-Fold StratifiedKFold (seed=42)",
+    "auc": 0.96377,
+    "fold_auc": [0.96302, 0.96365, 0.96381, 0.96469, 0.96367],
+    "delta": -3e-05,
+    "runtime": 161.5,
+    "compute_cost": "2.7 min (GitHub Actions)",
+    "artifact_paths": {
+      "workflow_run": "32036178719 (total_screen arm)",
+      "json": "artifacts/exp026_dl/screen_total_screen.json"
+    },
+    "conclusion": "total_screen = daily+weekend does NOT help: lgbm_63 OOF 0.96377 vs baseline 0.96380 (-0.00003, fold deltas all ~0). Despite its better univariate AUC (0.901 vs 0.889), the trees already capture the combination via 2D splits. Confirms the recurring lesson: univariate AUC gain does not imply model gain when components are already features. sm_weekend and all3 arms pending (their univariate edge is much larger, +0.026).",
+    "next_action": "Evaluate sm_weekend and all3 screen results; promote only if fold-level deltas are clearly positive."
   }
 ]

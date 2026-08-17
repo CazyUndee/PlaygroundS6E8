@@ -22,6 +22,8 @@ debug*.py
 experiment_tmp*.py
 plot*.png
 *.log
+artifacts/
+scratch_oof/
 
 # OS / editor
 .DS_Store
