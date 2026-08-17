@@ -287,6 +287,7 @@ def main():
     X_test = test[feats]
 
     results = {}
+    seed_arrays = {}
     for seed in seeds:
         print(f"\n=== Seed {seed} ({N_SPLITS}-Fold) ===", flush=True)
         res = run_seed(X_train, y, X_test, seed)
@@ -297,6 +298,7 @@ def main():
                 n: roc_auc_score(y, res["per_model_oof"][n]) for n in MODEL_CONFIGS
             },
         }
+        seed_arrays[str(seed)] = res
         print(
             f"  seed {seed} ensemble OOF AUC: {results[str(seed)]['oof_auc']:.5f}",
             flush=True,
@@ -304,14 +306,28 @@ def main():
 
     # Dual-seed super-ensemble: rank-average the per-seed ensembles.
     if len(seeds) >= 2:
-        super_oof = np.mean([_rank01(results[str(s)]["oof"]) for s in seeds], axis=0)
-        super_test = np.mean([_rank01(results[str(s)]["test"]) for s in seeds], axis=0)
+        super_oof = np.mean([_rank01(seed_arrays[str(s)]["oof"]) for s in seeds], axis=0)
+        super_test = np.mean([_rank01(seed_arrays[str(s)]["test"]) for s in seeds], axis=0)
         super_auc = roc_auc_score(y, super_oof)
         print(f"\n=== Dual-seed super-ensemble OOF AUC: {super_auc:.5f} ===", flush=True)
     else:
-        super_oof = results[str(seeds[0])]["oof"]
-        super_test = results[str(seeds[0])]["test"]
+        super_oof = seed_arrays[str(seeds[0])]["oof"]
+        super_test = seed_arrays[str(seeds[0])]["test"]
         super_auc = results[str(seeds[0])]["oof_auc"]
+
+    # Persist OOF/test arrays so future sessions can do diversity, blending,
+    # and subgroup analysis WITHOUT retraining (addresses the past
+    # "proxy-only OOF" failure).
+    np.save("oof_super.npy", super_oof)
+    np.save("test_super.npy", super_test)
+    for seed in seeds:
+        s = str(seed)
+        np.save(f"oof_seed{s}.npy", seed_arrays[s]["oof"])
+        np.save(f"test_seed{s}.npy", seed_arrays[s]["test"])
+        for name in MODEL_CONFIGS:
+            np.save(f"oof_seed{s}_{name}.npy", seed_arrays[s]["per_model_oof"][name])
+            np.save(f"test_seed{s}_{name}.npy", seed_arrays[s]["per_model_test"][name])
+    print("OOF/test arrays saved (oof_super.npy, oof_seed*.npy, etc.)", flush=True)
 
     # Submission (AUC metric -> rank-only, but clip to [0,1] for cleanliness).
     sub = pd.DataFrame(
