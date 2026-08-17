@@ -329,3 +329,21 @@ features (train + test cross-check). Result:
 - **Rule for this host:** one LightGBM training job at a time. Cheap
   pandas-only forensics are fine to run concurrently with a training job,
   but a second tree-training job is counterproductive.
+
+### Forensics: threshold structure + total_screen feature (new)
+- The label is a sharp threshold on screen usage: dst bins -> 0.40 (5-6h),
+  0.58 (6-7h), 0.76 (7-8h), 0.91 (8-9h), 0.99 (9-10h), ~1.0 (>10h).
+- The 3-component sum `sum3 = social+gaming+work` (already in the pipeline
+  as `total_active_hours`) is an even SHARPER threshold in the mid-range
+  (5-6h -> 0.61, 6-7h -> 0.82), consistent with the generator constructing
+  the label primarily from the 3 usage components plus the "other" residual.
+- **NEW candidate feature — `total_screen = daily_screen_time_hours +
+  weekend_screen_time`**: single-feature AUC 0.901, higher than daily (0.889)
+  or weekend (0.881) alone. Both are noisy measurements of the same
+  underlying usage signal, so the sum reduces noise; trees would otherwise
+  need 2D splits to approximate it. Not currently exposed in the pipeline
+  (only ratio/difference weekend features exist). Candidate EXP-026.
+- Single-feature AUC ranking (rank metric): total_screen 0.901 > daily
+  0.890 > weekend 0.881 > social_media 0.858 ~ sum3 0.857 > work_study
+  0.655 > gaming 0.622 > app_opens 0.541 > sleep 0.527 > age 0.502 >
+  notifications 0.492.

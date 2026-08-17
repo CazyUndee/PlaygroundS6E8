@@ -20,6 +20,13 @@ command sequence — let evidence decide.
       (0.96407): (a) age as native categorical, (b) one-hot age, (c) add
       `age_even` + high-age flags. *(quick subsample A/B running — EXP-024)*
 
+- [ ] **EXP-026 — `total_screen = daily + weekend` feature**: single-feature
+      AUC 0.901 beats daily (0.889) and weekend (0.881) alone — a
+      noise-reduction combination the trees currently have to approximate
+      with 2D splits. Likely higher value than the age encoding. Test under
+      identical seed-42 folds vs the 44-feature baseline; combine with
+      EXP-024's age encoding in one run if cheap.
+
 - [ ] **EXP-025 — count/sleep nonlinearity (follow-up if EXP-024 works)**:
       `app_opens_per_day` (AUC 0.541) and `sleep_hours` (0.527) also have
       non-monotonic target-rate profiles. If explicit age encoding helps,
