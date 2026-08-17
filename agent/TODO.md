@@ -10,7 +10,8 @@ command sequence — let evidence decide.
 - [ ] **EXP-023**: Record the dual-seed (42+100) 5-fold result of the 44-feature
       pipeline with `other_screen_time` (reconstructed `train_pipeline.py`).
       Confirm the EXP-022 gain (+0.00042) survives the full dual-seed protocol
-      and produce a fresh matched submission. *(running — see RUN_LOG)*
+      and produce a fresh matched submission. *(running on GitHub Actions —
+      `gh workflow run research.yml -f task=exp023_canonical`)*
 
 - [ ] **EXP-024 — age nonlinearity**: `age` (integer [18,35]) has ~0 linear
       correlation with the label but a large nonlinear per-age effect that

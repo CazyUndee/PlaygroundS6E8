@@ -100,3 +100,11 @@ explains the linear/neural underfit (0.92) vs trees (~0.964).
 age (r≈0.004), app_opens (r≈0.064), and sleep (r≈0.042) all carry real
 nonlinear per-value effects. Always inspect target-rate by value/bins before
 concluding a feature is useless.
+
+**D19 — ALL model compute runs on GitHub Actions; local is orchestration
+only.** The local Windows host is ~10x slower for LightGBM than a 4-vCPU
+Linux runner (and cannot run two training jobs concurrently, see HISTORY).
+The canonical pipeline and every experiment run on hosted Ubuntu runners via
+`.github/workflows/research.yml` (workflow_dispatch), with results downloaded
+as artifacts, curated into the memory files, and committed back to GitHub.
+Never run model training locally again.

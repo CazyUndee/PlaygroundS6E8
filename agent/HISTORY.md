@@ -347,3 +347,21 @@ features (train + test cross-check). Result:
   0.890 > weekend 0.881 > social_media 0.858 ~ sum3 0.857 > work_study
   0.655 > gaming 0.622 > app_opens 0.541 > sleep 0.527 > age 0.502 >
   notifications 0.492.
+
+---
+## Session 2026-08-17 (cont.) — ALL compute moves to GitHub Actions
+- The local Windows host proved ~10x slower than the historical 4-vCPU Linux
+  sandbox (LightGBM achieving only ~1.7 effective cores), so the local
+  EXP-023 run was KILLED after seed-42 folds 1-4 (partial reference numbers:
+  lgbm_63 fold AUCs 0.96313/0.96365/0.96386/0.96468 — they track the
+  historical fold pattern, good evidence the reconstruction is faithful).
+- **New operating model (D19):** GitHub is the compute environment. Created
+  `.github/workflows/research.yml` (workflow_dispatch; tasks exp023_canonical,
+  exp026_total_screen, exp024_age_screen, all), `requirements.txt`, and
+  moved the forensics scripts to `analysis/` for reproducibility. Local
+  machine is orchestration only: push -> `gh workflow run` -> download
+  artifacts (`gh run download`) -> curate results into memory files ->
+  commit. Model training NEVER runs locally again.
+- The workflow saves OOF/test arrays (train_pipeline.py now persists
+  oof_*.npy / test_*.npy) and uploads them as artifacts so diversity,
+  blending, and subgroup analyses are possible without retraining.

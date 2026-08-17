@@ -1,0 +1,136 @@
+name: research-compute
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Research task to run on this runner"
+        type: choice
+        options:
+          - exp023_canonical
+          - exp026_total_screen
+          - exp024_age_screen
+          - all
+        default: exp023_canonical
+
+# All compute happens here on hosted Linux runners. Local machine is
+# orchestration only (git push / gh workflow run / artifact download).
+permissions:
+  contents: read
+
+concurrency:
+  group: research-compute
+  cancel-in-progress: false
+
+jobs:
+  exp023_canonical:
+    if: ${{ inputs.task == 'exp023_canonical' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run canonical dual-seed 5-fold pipeline (EXP-023)
+        run: |
+          python -u agent/train_pipeline.py --out submission_matched_super.csv 2>&1 | tee exp023_run.log
+          echo "=== tail ==="
+          tail -20 exp023_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp023
+          cp submission_matched_super.csv artifacts/exp023/submission.csv
+          cp pipeline_results.json artifacts/exp023/pipeline_results.json
+          tar -czf artifacts/exp023/oof_arrays.tar.gz oof_*.npy test_*.npy 2>/dev/null || true
+          cp exp023_run.log artifacts/exp023/exp023_run.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp023-results
+          path: artifacts/exp023/
+          retention-days: 90
+
+  exp026_total_screen:
+    if: ${{ inputs.task == 'exp026_total_screen' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Screen total_screen feature (lgbm_63, seed-42, 5-fold)
+        run: |
+          python -u exp_screen_features.py --feature total_screen 2>&1 | tee exp026_run.log
+          echo "=== tail ==="
+          tail -15 exp026_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp026
+          cp screen_total_screen.json artifacts/exp026/ 2>/dev/null || true
+          tar -czf artifacts/exp026/preds.tar.gz oof_screen_total_screen.npy test_screen_total_screen.npy 2>/dev/null || true
+          cp exp026_run.log artifacts/exp026/exp026_run.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp026-results
+          path: artifacts/exp026/
+          retention-days: 90
+
+  exp024_age_screen:
+    if: ${{ inputs.task == 'exp024_age_screen' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Screen age-encoding features (lgbm_63, seed-42, 5-fold)
+        run: |
+          python -u exp_screen_features.py --feature age 2>&1 | tee exp024_run.log
+          echo "=== tail ==="
+          tail -15 exp024_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp024
+          cp screen_age.json artifacts/exp024/ 2>/dev/null || true
+          tar -czf artifacts/exp024/preds.tar.gz oof_screen_age.npy test_screen_age.npy 2>/dev/null || true
+          cp exp024_run.log artifacts/exp024/exp024_run.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp024-results
+          path: artifacts/exp024/
+          retention-days: 90

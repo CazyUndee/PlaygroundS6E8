@@ -2,7 +2,8 @@
   "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
   "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
   "last_recovered_from": "huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446",
-  "current_phase": "PHASE_9_RECOVERY_AND_EXP023_DUAL_SEED_44_FEATURES",
+  "current_phase": "PHASE_10_GITHUB_ACTIONS_COMPUTE",
+  "compute_environment": "ALL model compute runs on GitHub Actions (ubuntu-latest, 4 vCPU) via .github/workflows/research.yml; local machine is orchestration only (push / gh workflow run / download artifacts / curate + commit results)",
   "canonical_score": null,
   "note_on_historical_score": "EXP-014 = 0.96448 was the historical champion but its exact script was lost; it is directional only.",
   "reproducible_baseline": {
@@ -19,10 +20,12 @@
   "active_experiment": {
     "id": "EXP-023",
     "description": "44-feature dual-seed (42+100) 5-fold run of reconstructed train_pipeline.py",
-    "status": "running",
+    "status": "queued_on_github_actions",
     "script": "agent/train_pipeline.py",
-    "command": "python -u agent/train_pipeline.py --out submission_matched_super.csv"
+    "command": "gh workflow run research.yml -f task=exp023_canonical",
+    "artifact": "gh run download <run_id> -n exp023-results"
   },
+  "local_partial_reference": "Local EXP-023 seed-42 folds 1-4 lgbm_63 fold AUCs: 0.96313/0.96365/0.96386/0.96468 (tracks historical fold pattern; fold 5+seed 100 not run locally)",
   "completed_experiments": [
     "EXP-000..EXP-020 (historical, see experiments_registry.json)",
     "EXP-021: 42-feature reproducible rebuild, dual-seed (0.96402)",

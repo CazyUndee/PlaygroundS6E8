@@ -29,4 +29,13 @@ Execution facts only (not narrative — see HISTORY.md).
   concurrent LightGBM jobs on this host collapse effective throughput
   (EXP-023 fell from ~1.7 to ~0.9 cores). EXP-024 deferred to run after
   EXP-023. Lesson recorded.
-- (pending) — EXP-023 seed-42 full + seed-100; then EXP-024 sequential.
+- ~17:00 — Local EXP-023 reached seed-42 folds 1-4 (lgbm_63 fold AUCs
+  0.96313/0.96365/0.96386/0.96468; tracks the historical fold pattern),
+  then was KILLED (PID 30592) when the decision was made to run ALL compute
+  on GitHub Actions. Fold 5 + seed 100 were never completed locally.
+- ~17:00 — Created `.github/workflows/research.yml` (workflow_dispatch tasks:
+  exp023_canonical, exp026_total_screen, exp024_age_screen, all) +
+  `requirements.txt`. Local machine is now orchestration only: push →
+  `gh workflow run` → download artifacts → curate results → commit.
+- (pending) — GH Actions EXP-023 dual-seed result + submission; then
+  EXP-026/EXP-024 screens on GH Actions.
