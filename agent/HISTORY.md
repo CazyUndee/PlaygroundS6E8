@@ -502,3 +502,11 @@ Removing a feature group from the 44 features (OOF deltas vs full 0.96382):
   here vs the EXP-022 claim on the lost feature set.
 - Implication: the 44-feature set is near-optimal as-is; the only large,
   reliable effects are the count features (keep them) and age/sleep (keep).
+- The conditional count effects are concentrated in the DECISION-BOUNDARY
+  region: for dst 5.5-8.5h (where the label is uncertain), notifications
+  terciles shift the rate 0.55->0.51 (5.5-7h) and 0.81->0.79 (7-8.5h), while
+  app_opens shift it 0.50->0.57 and 0.78->0.83. In the extremes (dst<5.5 or
+  >10h) the label is nearly deterministic, so the counts don't matter there.
+  The generator's label is a screen-usage threshold with count-driven noise
+  in the boundary band — the model already exploits this, so no new feature
+  is indicated.
