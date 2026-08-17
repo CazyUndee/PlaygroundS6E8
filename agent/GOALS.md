@@ -26,10 +26,14 @@ reliable knowledge about the problem.
    *test* such structure rather than assuming an artifact is useful.
 
 ## Constraints
-- No Kaggle API credentials available: leaderboard AUC cannot be measured
-  locally; rely on OOF estimates and document the caveat.
-- Moderate compute (single machine, ~8 vCPU): prefer experiments that give a
-  reliable directional read in minutes, reserve full dual-seed runs for
-  promoted changes.
-- The persistent repository (now GitHub, formerly Hugging Face) must stay a
-  clean, understandable representation of the research — not a scratch dump.
+- No Kaggle API credentials available: leaderboard AUC cannot be measured;
+  rely on OOF estimates and document the caveat.
+- **All compute runs on GitHub Actions** (ubuntu-latest, 4 vCPU) via
+  `.github/workflows/research.yml`; the local machine is orchestration only
+  (push, trigger, download artifacts, curate results, commit). One training
+  job at a time; experiments are triggered explicitly with `gh workflow run`.
+- GitHub is the persistent home of the research (migrated from Hugging Face
+  `cazyundee/PlaygroundS6E8`). The repo must stay a clean, understandable
+  representation of the research — not a scratch dump; large artifacts live
+  as workflow artifacts (90-day retention), small results are curated into
+  `results/` and the memory files.
