@@ -468,3 +468,16 @@ features (train + test cross-check). Result:
   monotonic gradient. Its value comes from isolating the "other" usage
   component that dst aggregates; already promoted and contributing
   +0.00042 (single-seed) / +0.00064 (dual-seed).
+
+### First tune scan (pre-fix script): regularization is CRITICAL
+- The first scan (old script; most candidates lacked the canonical reg)
+  shows unregularized lgbm_63 = 0.96213 vs regularized baseline 0.96380:
+  **-0.0017** — far larger than the historical EXP-002 estimate (+0.00022).
+  On the 44-feature pipeline with early stopping, L1/L2 regularization is
+  load-bearing (prevents overfitting the many correlated ratio features).
+- Best config in that scan: lambda_100 (reg_lambda=10) = 0.96389 (+0.00009,
+  within fold noise). deep_255 (reg_lambda=10, reg_alpha=1) = 0.96374.
+  lr/mcs/colsample comparisons from that run are confounded (no reg).
+- A corrected scan (all candidates with canonical reg) is running on GH
+  Actions to cleanly evaluate the other knobs. Note: don't re-promote
+  configs for <~+0.0003 gains; fold variance is ~0.0016.
