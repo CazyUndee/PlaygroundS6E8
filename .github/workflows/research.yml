@@ -8,11 +8,20 @@ on:
         type: choice
         options:
           - exp023_canonical
-          - exp026_total_screen
-          - exp024_age_screen
+          - screen
           - forensics
           - all
         default: exp023_canonical
+      feature:
+        description: "Feature to screen (used when task == screen)"
+        type: choice
+        options:
+          - total_screen
+          - sm_weekend
+          - all3
+          - age
+          - both
+        default: total_screen
 
 # All compute happens here on hosted Linux runners. Local machine is
 # orchestration only (git push / gh workflow run / artifact download).
@@ -62,8 +71,8 @@ jobs:
           path: artifacts/exp023/
           retention-days: 90
 
-  exp026_total_screen:
-    if: ${{ inputs.task == 'exp026_total_screen' || inputs.task == 'all' }}
+  screen:
+    if: ${{ inputs.task == 'screen' || inputs.task == 'all' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -79,24 +88,24 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Screen total_screen feature (lgbm_63, seed-42, 5-fold)
+      - name: Screen feature (lgbm_63, seed-42, 5-fold)
         run: |
-          python -u exp_screen_features.py --feature total_screen 2>&1 | tee exp026_run.log
+          python -u exp_screen_features.py --feature ${{ inputs.feature }} 2>&1 | tee screen_run.log
           echo "=== tail ==="
-          tail -15 exp026_run.log
+          tail -20 screen_run.log
 
       - name: Package artifacts
         run: |
-          mkdir -p artifacts/exp026
-          cp screen_total_screen.json artifacts/exp026/ 2>/dev/null || true
-          tar -czf artifacts/exp026/preds.tar.gz oof_screen_total_screen.npy test_screen_total_screen.npy 2>/dev/null || true
-          cp exp026_run.log artifacts/exp026/exp026_run.log
+          mkdir -p artifacts/screen
+          cp screen_${{ inputs.feature }}.json artifacts/screen/ 2>/dev/null || true
+          tar -czf artifacts/screen/preds.tar.gz oof_screen_${{ inputs.feature }}.npy test_screen_${{ inputs.feature }}.npy 2>/dev/null || true
+          cp screen_run.log artifacts/screen/screen_run.log
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: exp026-results
-          path: artifacts/exp026/
+          name: screen-${{ inputs.feature }}-results
+          path: artifacts/screen/
           retention-days: 90
 
   forensics:
@@ -129,41 +138,4 @@ jobs:
         with:
           name: forensics-outputs
           path: artifacts/forensics/
-          retention-days: 90
-
-  exp024_age_screen:
-    if: ${{ inputs.task == 'exp024_age_screen' || inputs.task == 'all' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Screen age-encoding features (lgbm_63, seed-42, 5-fold)
-        run: |
-          python -u exp_screen_features.py --feature age 2>&1 | tee exp024_run.log
-          echo "=== tail ==="
-          tail -15 exp024_run.log
-
-      - name: Package artifacts
-        run: |
-          mkdir -p artifacts/exp024
-          cp screen_age.json artifacts/exp024/ 2>/dev/null || true
-          tar -czf artifacts/exp024/preds.tar.gz oof_screen_age.npy test_screen_age.npy 2>/dev/null || true
-          cp exp024_run.log artifacts/exp024/exp024_run.log
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: exp024-results
-          path: artifacts/exp024/
           retention-days: 90

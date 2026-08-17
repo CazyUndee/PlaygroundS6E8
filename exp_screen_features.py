@@ -41,6 +41,24 @@ def add_total_screen(df):
     return out
 
 
+def add_sm_weekend(df):
+    out = df.copy()
+    out["sm_weekend"] = out["social_media_hours"] + out["weekend_screen_time"]
+    out["sm_weekend_isna"] = out["sm_weekend"].isna().astype(np.int8)
+    return out
+
+
+def add_all3(df):
+    out = df.copy()
+    out["all3_screen"] = (
+        out["daily_screen_time_hours"]
+        + out["social_media_hours"]
+        + out["weekend_screen_time"]
+    )
+    out["all3_screen_isna"] = out["all3_screen"].isna().astype(np.int8)
+    return out
+
+
 def add_age(df):
     out = df.copy()
     out["age_cat"] = out["age"].astype("category")
@@ -51,6 +69,8 @@ def add_age(df):
 
 FEATURES = {
     "total_screen": ("total_screen", "total_screen_isna"),
+    "sm_weekend": ("sm_weekend", "sm_weekend_isna"),
+    "all3": ("all3_screen", "all3_screen_isna"),
     "age": ("age_cat", "age_even", "age_high_band"),
     "both": ("total_screen", "total_screen_isna", "age_cat", "age_even", "age_high_band"),
 }
@@ -75,6 +95,12 @@ def main():
     if args.feature in ("age", "both"):
         base = add_age(base)
         base_test = add_age(base_test)
+    if args.feature == "sm_weekend":
+        base = add_sm_weekend(base)
+        base_test = add_sm_weekend(base_test)
+    if args.feature == "all3":
+        base = add_all3(base)
+        base_test = add_all3(base_test)
 
     X = base[feats]
     y = base[TARGET].values
