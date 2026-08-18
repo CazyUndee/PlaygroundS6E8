@@ -18,7 +18,7 @@ git status            # understand local vs remote divergence
 git pull --rebase     # or merge, after confirming local work is safe
 ```
 
-The repository contains the dataset, a `source/` directory with the persistent research state and reusable code, a `state/` directory of scratch leftovers, and `.github/workflows/research.yml` (the compute jobs).
+The repository contains the dataset, a `source/` directory with the persistent research state and reusable code, a `state/` directory holding research run state / artifacts, and `.github/workflows/research.yml` (the compute jobs).
 
 If the workspace is already populated, verify that the local persistent state is not older than the remote state before modifying anything.
 
@@ -109,11 +109,11 @@ utils.py
 
 Do not confuse utility code with research memory.
 
-## 5. Treat `state/` and the Local Workspace as Scratch Space
+## 5. Local Workspace Is Scratch; `state/` Holds Run State
 
-The local workspace and the `state/` directory are allowed to be messy.
+The local workspace is pure scratch space and is allowed to be messy.
 
-`state/` currently holds leftovers from previous runs (throwaway forensics scripts in `state/analysis/`, per-experiment results in `state/results/`, ad-hoc feature screens like `state/exp_screen_features.py`).
+`state/` holds committed research run state and artifacts: per-experiment results (`state/results/`), forensics scripts (`state/analysis/`), and ad-hoc feature screens (`state/exp_screen_features.py`). It is the place to recover the latest run from without re-downloading workflow artifacts, and it is allowed to be looser than `source/` — but keep it organized per experiment and avoid duplicate submissions.
 
 Create temporary scripts, notebooks, predictions, checkpoints, plots, submissions, debug files, model artifacts, and whatever else is useful.
 
@@ -140,7 +140,9 @@ Do not accumulate dozens of duplicate submission files, throwaway scripts, inter
 
 The rule is:
 
-> Local workspace and `state/` = scratch space.
+> Local workspace = scratch space.
+>
+> `state/` = committed research run state / artifacts.
 >
 > GitHub repository = clean persistent research state.
 

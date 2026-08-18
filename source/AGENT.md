@@ -46,7 +46,7 @@ source/                  # research source of truth (memory + reusable code)
 ├── models.py
 └── utils.py
 
-state/                   # scratch / leftovers from previous agent runs
+state/                   # research run state / artifacts (per-run results, scripts)
 ├── analysis/
 ├── results/
 └── exp_screen_features.py
@@ -60,7 +60,7 @@ The dataset files (`train.csv`, `test.csv`, `sample_submission.csv`) are the res
 
 The `source/` directory is the research source of truth: persistent memory plus reusable research code.
 
-The `state/` directory holds disposable leftovers from previous runs. It is not part of the clean research notebook.
+The `state/` directory holds committed research run state and artifacts: per-experiment results (`state/results/`), forensics scripts (`state/analysis/`), and ad-hoc feature screens (`state/exp_screen_features.py`). A fresh agent can recover the latest run from it without re-downloading workflow artifacts. It is allowed to be looser than `source/`, but it is not a dump: keep it organized per experiment.
 
 ---
 
@@ -135,9 +135,9 @@ The purpose of this process is to continue the research rather than repeatedly r
 
 # 4. The Workspace Is Allowed to Be Messy
 
-The local filesystem and the `state/` directory are scratch space.
+The local filesystem is pure scratch space — use it aggressively.
 
-Use them aggressively.
+The `state/` directory is committed run state (per-run results, scripts). It may be looser than `source/`, but it should stay organized per experiment and free of duplicate submissions.
 
 You may create temporary:
 
@@ -218,7 +218,9 @@ If one is important enough to preserve, keep the canonical artifact and record t
 
 The same principle applies to temporary predictions, debug scripts, plots, checkpoints, and throwaway experiments.
 
-> **Local workspace and `state/`: use whatever is useful.**
+> **Local workspace: use whatever is useful.**
+>
+> **`state/`: committed run state — keep it organized per experiment, avoid duplicates.**
 >
 > **Persistent GitHub repository: preserve only what is useful.**
 
@@ -235,7 +237,7 @@ GitHub
     ↓
 git pull latest persistent environment
     ↓
-local scratch workspace (including state/)
+local workspace (run results land in state/)
     ↓
 research (compute on GitHub Actions)
     ↓
@@ -1319,7 +1321,7 @@ Then research continues.
 
 This environment is a persistent research laboratory.
 
-The local filesystem and `state/` are the scratch bench.
+The local filesystem is the scratch bench; `state/` holds the committed run state and artifacts.
 
 The GitHub repository is the persistent lab notebook and source of truth.
 
@@ -1353,7 +1355,7 @@ Remember:
 >
 > **The TODO queue preserves promising questions.**
 >
-> **The scratch workspace can be messy.**
+> **The local scratch workspace can be messy; `state/` stays organized per run.**
 >
 > **The persistent repository should be clean.**
 >

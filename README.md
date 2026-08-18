@@ -20,7 +20,7 @@ test.csv                # 296,302 rows × 13 cols
 sample_submission.csv   # id, addicted_label
 requirements.txt        # python dependencies
 source/                 # research source of truth: memory files + reusable code
-state/                  # scratch from the last agent run (analysis, results, ad-hoc scripts)
+state/                  # research run state / artifacts (per-experiment results, scripts)
 .github/workflows/      # GitHub Actions compute jobs
 ```
 
@@ -40,12 +40,15 @@ state/                  # scratch from the last agent run (analysis, results, ad
 | `train_pipeline.py` | **canonical reproducible pipeline** (44 features, dual-seed 5-fold LightGBM) |
 | `features.py` / `models.py` / `ensemble.py` / `utils.py` | reusable infrastructure |
 
-### `state/` — scratch / leftovers
+### `state/` — research run state / artifacts
 
-Disposable artifacts from previous runs: throwaway forensics scripts
-(`state/analysis/`), per-experiment results (`state/results/`), and ad-hoc
-feature-screen scripts (`state/exp_screen_features.py`). It is allowed to be
-messy and is not part of the clean research notebook.
+Committed per-run results and artifacts recovered from GitHub Actions runs:
+per-experiment results (`state/results/<exp>/`, e.g. the EXP-023 champion
+submission + results JSON), forensics scripts (`state/analysis/`), and ad-hoc
+feature screens (`state/exp_screen_features.py`). A fresh agent can recover
+the latest run from here without re-downloading workflow artifacts. It is
+allowed to be looser than `source/`, but keep it organized per experiment and
+avoid accumulating duplicate submissions.
 
 ## Run the research (GitHub Actions)
 
