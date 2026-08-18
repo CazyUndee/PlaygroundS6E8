@@ -428,3 +428,85 @@ features (train + test cross-check). Result:
   then promote winners into build_features and re-run dual-seed EXP-027.
 - Note: the queued age screen (exp024) was auto-cancelled when the workflow
   file changed; re-trigger it after the current screen queue.
+
+### EXP-026 screen results: combination features are NEUTRAL (durable)
+- total_screen (daily+weekend): lgbm_63 OOF 0.96377 vs baseline 0.96380
+  (delta -0.00003; fold deltas ~0).
+- sm_weekend (social+weekend, univariate AUC 0.915 vs daily 0.889):
+  lgbm_63 OOF 0.96377 vs 0.96380 (delta -0.00003; fold deltas -0.00007 /
+  +0.00002 / +0.00003 / -0.00006 / -0.00015).
+- **Conclusion: even a LARGE univariate-AUC advantage (+0.026) does not
+  transfer to model gain when the components are already raw features — the
+  trees' multi-dimensional splits already find the combination.** The
+  feature-combination direction is exhausted; do not promote total_screen /
+  sm_weekend / all3 (pending) without a genuinely different mechanism.
+- Remaining hope from this batch: the age encoding (independent per-value
+  +0.06 signal, NOT a combination) and possibly app_opens/sleep per-value
+  encodings.
+
+### EXP-024 age screen: NEGATIVE (all four screens neutral or worse)
+- age_cat + age_even + age_high_band: lgbm_63 OOF 0.96352 vs baseline
+  0.96380, delta -0.00029, every fold negative (-0.00018 to -0.00036).
+- **The feature direction is now exhausted, decisively:** total_screen
+  (-0.00003), sm_weekend (-0.00003), all3 (0.00000), age (-0.00029). Even a
+  real, independent per-value signal (age) does NOT help beyond the raw
+  numeric feature — the trees already exploit it, and extra encodings just
+  add overfitting capacity. This mirrors EXP-018/EXP-001/EXP-010: the
+  canonical 44 features already capture the sufficient statistics.
+- **Practical implication (durable): stop adding features to this pipeline
+  without a mechanism that is genuinely missing from the raw features.
+  Remaining value is more likely in (a) hyperparameter tuning of the model
+  configs, (b) validation/robustness work, or (c) accepting EXP-023 (0.96466)
+  as the champion.** The tune scan is running on GH Actions.
+
+### other_screen_time characterization (champion's key feature)
+- Univariate AUC 0.765 (min 0, max 11.53, mean 1.34, std 1.48).
+- NOT driven by messaging: corr with notifications_per_day 0.019 and
+  app_opens_per_day 0.037 (both ~0). corr with dst 0.586 (it is a large
+  component of daily screen time). No age interaction (mean 1.33 vs 1.38).
+- Target rate by its quintiles: 0.43 / 0.57 / 0.72 / 0.89 / 0.93 — a strong
+  monotonic gradient. Its value comes from isolating the "other" usage
+  component that dst aggregates; already promoted and contributing
+  +0.00042 (single-seed) / +0.00064 (dual-seed).
+
+### First tune scan (pre-fix script): regularization is CRITICAL
+- The first scan (old script; most candidates lacked the canonical reg)
+  shows unregularized lgbm_63 = 0.96213 vs regularized baseline 0.96380:
+  **-0.0017** — far larger than the historical EXP-002 estimate (+0.00022).
+  On the 44-feature pipeline with early stopping, L1/L2 regularization is
+  load-bearing (prevents overfitting the many correlated ratio features).
+- Best config in that scan: lambda_100 (reg_lambda=10) = 0.96389 (+0.00009,
+  within fold noise). deep_255 (reg_lambda=10, reg_alpha=1) = 0.96374.
+  lr/mcs/colsample comparisons from that run are confounded (no reg).
+- A corrected scan (all candidates with canonical reg) is running on GH
+  Actions to cleanly evaluate the other knobs. Note: don't re-promote
+  configs for <~+0.0003 gains; fold variance is ~0.0016.
+
+### Feature ablation (lgbm_63, seed-42, 5-fold) — IMPORTANT interpretation fix
+Removing a feature group from the 44 features (OOF deltas vs full 0.96382):
+- **notifications_per_day: -0.0082** and **app_opens_per_day: -0.0064** —
+  the LARGEST effects in the whole ablation, despite near-zero marginal
+  correlation (single-feature AUC 0.492 / 0.541). The count features carry
+  huge CONDITIONAL signal: within fixed screen time, more notifications ->
+  lower rate and more app_opens -> higher rate (verified earlier).
+  **CORRECTION to earlier framing: "counts are weak" was only true
+  marginally; they are among the most important features for conditional
+  prediction.** Do NOT remove them.
+- -age: -0.00019, -sleep: -0.00030 (removal hurts — consistent with their
+  real per-value/nonlinear signal).
+- -domain_ratios: +0.00018, -categoricals: +0.00011, -isna: +0.00002,
+  -missingness_counts: +0.00002, -other_screen_time: +0.00004 — all within
+  fold noise (~0.0016), i.e. removal is NEUTRAL (not harmful, not clearly
+  helpful). In this reconstruction other_screen_time is partly derivable
+  from total_active_hours + daily, explaining its smaller standalone role
+  here vs the EXP-022 claim on the lost feature set.
+- Implication: the 44-feature set is near-optimal as-is; the only large,
+  reliable effects are the count features (keep them) and age/sleep (keep).
+- The conditional count effects are concentrated in the DECISION-BOUNDARY
+  region: for dst 5.5-8.5h (where the label is uncertain), notifications
+  terciles shift the rate 0.55->0.51 (5.5-7h) and 0.81->0.79 (7-8.5h), while
+  app_opens shift it 0.50->0.57 and 0.78->0.83. In the extremes (dst<5.5 or
+  >10h) the label is nearly deterministic, so the counts don't matter there.
+  The generator's label is a screen-usage threshold with count-driven noise
+  in the boundary band — the model already exploits this, so no new feature
+  is indicated.

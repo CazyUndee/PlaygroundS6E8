@@ -52,12 +52,39 @@ avoid accumulating duplicate submissions.
 
 ## Run the research (GitHub Actions)
 
+All model compute runs on GitHub Actions (D19) — the local machine is
+orchestration only. Trigger experiments with the `gh` CLI:
+
 ```bash
-# regenerate the canonical champion (EXP-023)
-gh workflow run research.yml -f task=exp023_canonical
+# Canonical dual-seed 5-fold pipeline (the champion, EXP-023)
+gh workflow run research-compute -f task=exp023_canonical
 gh run watch
-gh run download <run-id>
+
+# Feature screen (lgbm_63, seed-42, 5-fold) vs the committed baseline
+gh workflow run research-compute -f task=screen -f feature=total_screen
+# feature options: total_screen, sm_weekend, all3, age, both
+
+# Hyperparameter scan and feature ablation
+gh workflow run research-compute -f task=tune
+gh workflow run research-compute -f task=ablate
+
+# Import/feature smoke test (fast sanity check after code moves)
+gh workflow run research-compute -f task=smoke
+
+# Reproduce the pandas forensics
+gh workflow run research-compute -f task=forensics
 ```
+
+Collect results:
+
+```bash
+gh run list --workflow=research-compute
+gh run download <run_id> -n <artifact-name> -D artifacts/
+```
+
+Then curate small results into `state/results/<exp>/`, update the memory
+files in `source/`, and commit. Large OOF arrays live as workflow artifacts
+(90-day retention); the exact scripts are always in the repo (D14).
 
 Read `source/RESEARCH_STATE.md` and `source/DECISIONS.md` first to recover
 the current understanding; search `source/HISTORY.md` for historical detail.

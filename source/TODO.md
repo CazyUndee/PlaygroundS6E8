@@ -21,19 +21,25 @@ command sequence — let evidence decide.
       (0.96407): (a) age as native categorical, (b) one-hot age, (c) add
       `age_even` + high-age flags. *(quick subsample A/B running — EXP-024)*
 
-- [ ] **EXP-026 — `total_screen = daily + weekend` feature**: single-feature
-      AUC 0.901 beats daily (0.889) and weekend (0.881) alone — a
-      noise-reduction combination the trees currently have to approximate
-      with 2D splits. Likely higher value than the age encoding. Test under
-      identical seed-42 folds vs the 44-feature baseline; combine with
-      EXP-024's age encoding in one run if cheap.
+- [x] **EXP-026 — combination features (total_screen/sm_weekend/all3)**:
+      ALL NEUTRAL (deltas -0.00003 / -0.00003 / 0.00000). Trees already
+      capture combinations; direction exhausted. Do not revisit without a
+      new mechanism.
 
-- [ ] **EXP-025 — count/sleep nonlinearity (follow-up if EXP-024 works)**:
-      `app_opens_per_day` (AUC 0.541) and `sleep_hours` (0.527) also have
-      non-monotonic target-rate profiles. If explicit age encoding helps,
-      apply the same treatment (OOF target-encode / categorical / bins) to
-      app_opens and sleep, and possibly a `notifications` inverse-rate
-      encoding.
+- [x] **EXP-024 — age nonlinearity**: REJECTED (OOF 0.96352 vs 0.96380,
+      -0.00029). Raw numeric age already lets trees use the per-value signal;
+      explicit encodings add overfitting capacity.
+
+- [ ] **EXP-025 — count/sleep nonlinearity (LOW PRIORITY now)**: app_opens
+      and sleep have nonlinear profiles, but given the age encoding failed,
+      explicit encodings are unlikely to help. Only worth a quick screen if
+      the tune scan reveals headroom.
+
+- [ ] **Hyperparameter tuning (active)**: lgbm_63 scan (lr 0.10/0.12/0.15,
+      leaves 31/63/95/127/255, min_child_samples 10/20/50, colsample
+      0.7/0.8/0.95, subsample 0.8/0.95, reg variants, capacity probes). If a
+      config clearly beats 0.96380, promote and re-run the dual-seed
+      protocol (EXP-027) on GH Actions.
 
 ## P1 (strong hypotheses, quick reads)
 

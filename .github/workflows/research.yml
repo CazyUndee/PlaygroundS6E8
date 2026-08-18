@@ -9,6 +9,8 @@ on:
         options:
           - exp023_canonical
           - screen
+          - tune
+          - ablate
           - forensics
           - smoke
           - all
@@ -105,6 +107,78 @@ jobs:
         with:
           name: screen-${{ inputs.feature }}-results
           path: artifacts/screen/
+          retention-days: 90
+
+  tune:
+    if: ${{ inputs.task == 'tune' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Hyperparameter scan (lgbm_63, seed-42, 5-fold)
+        run: |
+          python -u state/exp_tune_lgbm.py 2>&1 | tee tune_run.log
+          echo "=== tail ==="
+          tail -20 tune_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/tune
+          cp tune_results.json artifacts/tune/
+          cp tune_run.log artifacts/tune/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tune-results
+          path: artifacts/tune/
+          retention-days: 90
+
+  ablate:
+    if: ${{ inputs.task == 'ablate' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Feature-group ablation (lgbm_63, seed-42, 5-fold)
+        run: |
+          python -u state/exp_ablate.py 2>&1 | tee ablate_run.log
+          echo "=== tail ==="
+          tail -20 ablate_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/ablate
+          cp ablate_results.json artifacts/ablate/
+          cp ablate_run.log artifacts/ablate/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ablate-results
+          path: artifacts/ablate/
           retention-days: 90
 
   forensics:

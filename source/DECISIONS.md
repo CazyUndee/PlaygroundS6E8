@@ -101,6 +101,15 @@ age (r≈0.004), app_opens (r≈0.064), and sleep (r≈0.042) all carry real
 nonlinear per-value effects. Always inspect target-rate by value/bins before
 concluding a feature is useless.
 
+**D20 — `notifications_per_day` and `app_opens_per_day` are among the most
+important features CONDITIONALLY, despite ~zero marginal correlation.**
+Removing them from the 44-feature pipeline costs -0.0082 / -0.0064 OOF AUC
+(largest ablation effects). They moderate the screen-time -> label
+relationship (within fixed screen time: more notifications -> lower rate,
+more app_opens -> higher rate). Never dismiss a feature by marginal
+correlation/AUC alone; always check conditional/interaction importance
+(e.g., via ablation).
+
 **D19 — ALL model compute runs on GitHub Actions; local is orchestration
 only.** The local Windows host is ~10x slower for LightGBM than a 4-vCPU
 Linux runner (and cannot run two training jobs concurrently, see HISTORY).

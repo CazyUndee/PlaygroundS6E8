@@ -2,7 +2,7 @@
   "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
   "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
   "last_recovered_from": "github:origin (previously huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446)",
-  "current_phase": "PHASE_11_FEATURE_SCREENS_ON_CHAMPION",
+  "current_phase": "PHASE_12_FEATURE_DIRECTION_EXHAUSTED_TUNING",
   "compute_environment": "ALL model compute runs on GitHub Actions (ubuntu-latest, 4 vCPU) via .github/workflows/research.yml; local machine is orchestration only (push / gh workflow run / download artifacts / curate + commit results)",
   "canonical_score": 0.96466,
   "canonical_experiment": "EXP-023 (44-feature dual-seed super-ensemble, seeds 42+100; seed42=0.96435 seed100=0.96439)",
@@ -19,11 +19,19 @@
     "delta_vs_exp021_seed42": 0.00042
   },
   "active_experiment": {
-    "id": "EXP-026/EXP-024",
-    "description": "Feature screens (total_screen, age encoding) vs 44-feature lgbm_63 baseline",
-    "status": "queued_on_github_actions",
-    "script": "state/exp_screen_features.py",
-    "command": "gh workflow run research.yml -f task=screen -f feature=total_screen / -f task=screen -f feature=age"
+    "id": "tune",
+    "description": "lgbm_63 hyperparameter scan (lr, leaves, min_child_samples, colsample, subsample, reg, capacity probes) vs EXP-023 baseline",
+    "status": "running_on_github_actions",
+    "script": "state/exp_tune_lgbm.py",
+    "command": "gh workflow run research.yml -f task=tune"
+  },
+  "feature_screen_results": {
+    "all_four_neutral_or_negative": true,
+    "total_screen": -0.00003,
+    "sm_weekend": -0.00003,
+    "all3": 0.0,
+    "age": -0.00029,
+    "conclusion": "The 44-feature pipeline already captures the sufficient statistics; feature direction is exhausted."
   },
   "champion": {
     "id": "EXP-023",
