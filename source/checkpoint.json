@@ -1,7 +1,7 @@
 {
   "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
   "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
-  "last_recovered_from": "huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446",
+  "last_recovered_from": "github:origin (previously huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446)",
   "current_phase": "PHASE_11_FEATURE_SCREENS_ON_CHAMPION",
   "compute_environment": "ALL model compute runs on GitHub Actions (ubuntu-latest, 4 vCPU) via .github/workflows/research.yml; local machine is orchestration only (push / gh workflow run / download artifacts / curate + commit results)",
   "canonical_score": 0.96466,
@@ -9,7 +9,7 @@
   "note_on_historical_score": "EXP-014 = 0.96448 (lost pipeline) is now BEATEN by the reproducible EXP-023 = 0.96466.",
   "reproducible_baseline": {
     "exp": "EXP-021",
-    "pipeline": "agent/train_pipeline.py (42 features, dual-seed 5-fold)",
+    "pipeline": "source/train_pipeline.py (42 features, dual-seed 5-fold)",
     "oof_auc": 0.96402
   },
   "promoted_feature": {
@@ -22,14 +22,14 @@
     "id": "EXP-026/EXP-024",
     "description": "Feature screens (total_screen, age encoding) vs 44-feature lgbm_63 baseline",
     "status": "queued_on_github_actions",
-    "script": "exp_screen_features.py",
-    "command": "gh workflow run research.yml -f task=exp026_total_screen / -f task=exp024_age_screen"
+    "script": "state/exp_screen_features.py",
+    "command": "gh workflow run research.yml -f task=screen -f feature=total_screen / -f task=screen -f feature=age"
   },
   "champion": {
     "id": "EXP-023",
     "oof_auc": 0.96466,
-    "submission": "results/exp023/submission.csv",
-    "results": "results/exp023/pipeline_results.json",
+    "submission": "state/results/exp023/submission.csv",
+    "results": "state/results/exp023/pipeline_results.json",
     "oof_arrays": "workflow artifact exp023-results (retention 90d); also scratch_oof/ locally",
     "regenerate": "gh workflow run research.yml -f task=exp023_canonical"
   },
@@ -57,5 +57,5 @@
     "Feature ablation of other_screen_time",
     "Model/seed prediction diversity re-measurement"
   ],
-  "resume_note": "Recover memory from RESEARCH_STATE.md/DECISIONS.md/TODO.md; run `python -u agent/train_pipeline.py --out submission_matched_super.csv` to regenerate the champion."
+  "resume_note": "Recover memory from RESEARCH_STATE.md/DECISIONS.md/TODO.md; run `python -u source/train_pipeline.py --out submission_matched_super.csv` to regenerate the champion."
 }

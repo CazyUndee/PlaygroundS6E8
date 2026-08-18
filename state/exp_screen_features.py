@@ -3,15 +3,22 @@ canonical 44 features plus candidate extras, and compare fold-level AUCs to
 the EXP-023 lgbm_63 baseline (fold 1-4 already logged; fold 5 TBD).
 
 Protocol matches train_pipeline.run_seed exactly (same folds, same config),
-so fold-by-fold comparison against EXP-023's lgbm_63 is clean. One job at a
-time on this host (see HISTORY concurrency lesson).
+so fold-by-fold comparison against EXP-023's lgbm_63 is clean. Runs on
+GitHub Actions runners (isolated, so parallel runs are safe — see
+source/DECISIONS.md D19).
 
 Usage:
-    python exp_screen_features.py --feature total_screen
-    python exp_screen_features.py --feature age
+    python state/exp_screen_features.py --feature total_screen
+    python state/exp_screen_features.py --feature age
 """
 import argparse
+import os
+import sys
 import time
+
+# Make the repo root importable so this script can import the `source`
+# package (sibling of `state/`) regardless of the invocation directory.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
@@ -21,7 +28,7 @@ from sklearn.model_selection import StratifiedKFold
 
 import lightgbm as lgb
 
-from agent.train_pipeline import (
+from source.train_pipeline import (
     COMMON_PARAMS,
     MODEL_CONFIGS,
     N_SPLITS,
@@ -142,10 +149,11 @@ def main():
                    "fold_aucs": fold_aucs}, f, indent=2)
 
     # Auto-compare against the canonical EXP-023 lgbm_63 baseline if its
-    # results are present (results/exp023/pipeline_results.json, committed by
-    # the agent after the canonical run). Same folds/config -> clean compare.
-    import json, os
-    baseline_path = os.path.join("results", "exp023", "pipeline_results.json")
+    # results are present (state/results/exp023/pipeline_results.json,
+    # committed by the agent after the canonical run). Same folds/config ->
+    # clean compare.
+    import json
+    baseline_path = os.path.join("state", "results", "exp023", "pipeline_results.json")
     if os.path.exists(baseline_path):
         with open(baseline_path) as f:
             base = json.load(f)
@@ -157,7 +165,7 @@ def main():
         for i, (b, s) in enumerate(zip(base_folds, fold_aucs), 1):
             print(f"  fold {i}: baseline {b:.5f} -> screen {s:.5f} (delta {s - b:+.5f})", flush=True)
     else:
-        print("\n(baseline results/exp023/pipeline_results.json not found; "
+        print("\n(baseline state/results/exp023/pipeline_results.json not found; "
               "fold AUCs printed above for manual comparison)", flush=True)
 
 

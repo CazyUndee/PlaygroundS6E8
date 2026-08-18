@@ -36,4 +36,4 @@ reliable knowledge about the problem.
   `cazyundee/PlaygroundS6E8`). The repo must stay a clean, understandable
   representation of the research — not a scratch dump; large artifacts live
   as workflow artifacts (90-day retention), small results are curated into
-  `results/` and the memory files.
+  `state/results/` and the memory files.

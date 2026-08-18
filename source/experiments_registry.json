@@ -691,7 +691,7 @@
     "runtime": 858.0,
     "compute_cost": "14.3 min (4 vCPU sandbox)",
     "artifact_paths": {
-      "script": "agent/train_pipeline.py"
+      "script": "source/train_pipeline.py"
     },
     "conclusion": "Rebuilt a documented 42-feature pipeline (9 numeric, 3 categorical, 12 _isna, 3 missingness-count, ~15 domain ratios) with the documented 3 regularized LGBM configs and dual-seed rank-averaging. Achieved 0.96402, close to but below the lost 0.96448. The relative dual-seed gain (+0.00025-0.00037 over single seed) replicated, confirming the dual-seed effect (D9) is robust and not an artifact of the exact lost feature set.",
     "next_action": "Test the other_screen_time residual feature discovered in dataset forensics."
@@ -723,7 +723,7 @@
     "runtime": 420.0,
     "compute_cost": "7 min (single seed)",
     "artifact_paths": {
-      "script": "agent/train_pipeline.py"
+      "script": "source/train_pipeline.py"
     },
     "conclusion": "other_screen_time = daily_screen_time - social_media - gaming - work_study is a hard-constraint residual (zero violations; Pearson r~0.305 with label) that the existing share/ratio features never exposed directly. Adding it (+ _isna) gave +0.00042 OOF AUC, the largest single feature-engineering gain of the program, consistent across folds/models. PROMOTED to the canonical feature set (44 features).",
     "next_action": "Run the full dual-seed 44-feature protocol to confirm the gain (EXP-023)."
@@ -764,11 +764,11 @@
     "runtime": 890.4,
     "compute_cost": "14.8 min (GitHub Actions ubuntu-latest, 4 vCPU)",
     "artifact_paths": {
-      "script": "agent/train_pipeline.py",
-      "submission": "results/exp023/submission.csv",
-      "results": "results/exp023/pipeline_results.json",
+      "script": "source/train_pipeline.py",
+      "submission": "state/results/exp023/submission.csv",
+      "results": "state/results/exp023/pipeline_results.json",
       "oof_arrays": "workflow artifact exp023-results/oof_arrays.tar.gz",
-      "run_log": "results/exp023/exp023_run.log"
+      "run_log": "state/results/exp023/exp023_run.log"
     },
     "conclusion": "NEW REPRODUCIBLE CHAMPION. Dual-seed 44-feature super-ensemble reaches 0.96466 OOF ROC-AUC, beating the historical (lost-pipeline) EXP-014 0.96448. The other_screen_time gain at dual-seed is +0.00064 over the 42-feature EXP-021 rebuild (larger than the +0.00042 single-seed estimate, confirming EXP-022). Seed 42 = 0.96435, seed 100 = 0.96439. Fully reproducible on GitHub Actions (15 min, run 32034710221); fold-level AUCs match the local partial run exactly. Subgroup difficulty gradient reproduced (0-missing AUC 0.973 vs 9-missing 0.828).",
     "next_action": "Screen EXP-026 (total_screen = daily + weekend) and EXP-024 (age encoding) on GitHub Actions; promote winners into build_features and re-run the dual-seed protocol."

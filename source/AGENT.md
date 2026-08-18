@@ -14,24 +14,24 @@ You are operating a continuous research process.
 
 # 1. The Persistent Research Environment
 
-The persistent research environment is stored in the Hugging Face dataset:
+The persistent research environment is a **GitHub repository**.
 
-`cazyundee/PlaygroundS6E8`
+It was migrated from the Hugging Face dataset `cazyundee/PlaygroundS6E8`. GitHub is now the persistent home of the research.
 
-The Hugging Face dataset is the persistent home of the research.
+A local workspace may be temporary, recreated, reset, or replaced. The GitHub repository is where the research state must survive.
 
-A local environment may be temporary, recreated, reset, or replaced. The Hugging Face dataset is where the research state must survive.
-
-The repository currently contains:
+The repository contains:
 
 ```text
 train.csv
 test.csv
 sample_submission.csv
 README.md
+requirements.txt
+PROMPT.md                # entry prompt for a fresh agent
 
-agent/
-├── AGENT.md
+source/                  # research source of truth (memory + reusable code)
+├── AGENT.md             # operating rules (this file)
 ├── GOALS.md
 ├── RESEARCH_STATE.md
 ├── HISTORY.md
@@ -40,27 +40,68 @@ agent/
 ├── RUN_LOG.md
 ├── checkpoint.json
 ├── experiments_registry.json
+├── train_pipeline.py    # canonical reproducible pipeline
 ├── ensemble.py
 ├── features.py
 ├── models.py
 └── utils.py
+
+state/                   # scratch / leftovers from previous agent runs
+├── analysis/
+├── results/
+└── exp_screen_features.py
+
+.github/workflows/research.yml   # GitHub Actions compute jobs
 ```
 
 Some of these files may not exist yet. Create them when useful.
 
-The dataset files are the research inputs.
+The dataset files (`train.csv`, `test.csv`, `sample_submission.csv`) are the research inputs.
 
-The `agent/` directory is the persistent research system.
+The `source/` directory is the research source of truth: persistent memory plus reusable research code.
+
+The `state/` directory holds disposable leftovers from previous runs. It is not part of the clean research notebook.
 
 ---
 
-# 2. Recover the Research Before Doing New Work
+# 2. Compute Model: GitHub Actions
 
-When starting in a fresh or unknown environment, first retrieve the latest state from the Hugging Face dataset.
+**All model training and heavy compute runs on GitHub Actions.**
+
+The local machine is orchestration only. Its roles are:
+
+* edit code and research state
+* trigger jobs: `gh workflow run research.yml -f task=<task>`
+* monitor jobs: `gh run watch` / `gh run view <run-id>`
+* download results: `gh run download <run-id>`
+* curate results into `state/results/` and the memory files
+* commit and push the clean research state
+
+The compute jobs are defined in `.github/workflows/research.yml`. Dispatchable tasks are declared there (currently `exp023_canonical`, `screen`, `forensics`, `all`). Read the workflow to see exactly what each task runs.
+
+**Never run model training locally** (see `DECISIONS.md` D19). The local host is much slower than a hosted runner and cannot run concurrent training jobs well.
+
+Hosted runners are isolated, so parallel `workflow_dispatch` runs are safe. Still, do not waste compute: trigger jobs only when they answer a research question.
+
+Large outputs (OOF arrays, predictions, run logs) live as **workflow artifacts** (90-day retention). Only small, canonical results (a champion submission, a results JSON) are curated into `state/results/` and committed.
+
+---
+
+# 3. Recover the Research Before Doing New Work
+
+When starting in a fresh or unknown environment, first sync the latest state from GitHub:
+
+```bash
+git fetch origin
+git status      # understand local vs remote divergence
+git pull        # after confirming local work is safe
+```
 
 Do not assume that the local filesystem is already current.
 
-Once the environment is available, recover the research context.
+Never overwrite newer remote research with an older local copy, and never push stale local state over newer remote work.
+
+Once the repository is current, recover the research context.
 
 At minimum, understand:
 
@@ -92,11 +133,11 @@ The purpose of this process is to continue the research rather than repeatedly r
 
 ---
 
-# 3. The Local Workspace Is Allowed to Be Messy
+# 4. The Workspace Is Allowed to Be Messy
 
-The local filesystem is a scratch workspace.
+The local filesystem and the `state/` directory are scratch space.
 
-Use it aggressively.
+Use them aggressively.
 
 You may create temporary:
 
@@ -114,7 +155,7 @@ You may create temporary:
 * intermediate datasets
 * experimental outputs
 
-There is no requirement for the local workspace to remain aesthetically clean.
+There is no requirement for the scratch space to remain aesthetically clean.
 
 For example, this is perfectly acceptable locally:
 
@@ -141,11 +182,11 @@ Scratch work is disposable.
 
 ---
 
-# 4. The Hugging Face Repository Must Stay Clean
+# 5. The GitHub Repository Must Stay Clean
 
-The persistent Hugging Face repository is different.
+The persistent GitHub repository is different.
 
-Do not push the entire scratch workspace back to Hugging Face.
+Do not push the entire scratch workspace back to GitHub.
 
 The persistent repository should contain files that are useful for:
 
@@ -177,49 +218,47 @@ If one is important enough to preserve, keep the canonical artifact and record t
 
 The same principle applies to temporary predictions, debug scripts, plots, checkpoints, and throwaway experiments.
 
-> **Local workspace: use whatever is useful.**
+> **Local workspace and `state/`: use whatever is useful.**
 >
-> **Persistent Hugging Face repository: preserve only what is useful.**
+> **Persistent GitHub repository: preserve only what is useful.**
 
 The persistence boundary is a cleanup boundary.
 
 ---
 
-# 5. Synchronization
+# 6. Synchronization
 
 The normal lifecycle is:
 
 ```text
-Hugging Face
+GitHub
     ↓
-retrieve latest persistent environment
+git pull latest persistent environment
     ↓
-local scratch workspace
+local scratch workspace (including state/)
     ↓
-research
+research (compute on GitHub Actions)
     ↓
 update persistent research files
     ↓
 remove/exclude unnecessary scratch artifacts
     ↓
-push clean state
+commit + push clean state
     ↓
-Hugging Face
+GitHub
 ```
 
-When syncing back to Hugging Face, publish a clean version of the research environment.
+Large experimental outputs (OOF arrays, per-run predictions, logs) are kept as workflow artifacts with 90-day retention and are **not** committed. Small canonical results are curated into `state/results/` and the memory files.
 
-Do not blindly mirror the whole local filesystem.
-
-Before replacing persistent files, make sure the local state is not older than the remote state.
+Before committing and pushing, make sure the local state is not older than the remote state.
 
 Never overwrite newer research with an older copy just because that copy happens to exist locally.
 
-The goal is that a fresh agent can retrieve the repository and understand the research without needing your entire scratch directory.
+The goal is that a fresh agent can clone the repository and understand the research without needing your entire scratch directory.
 
 ---
 
-# 6. Persistent Memory Has Different Layers
+# 7. Persistent Memory Has Different Layers
 
 Do not treat every persistent file as the same kind of memory.
 
@@ -265,13 +304,15 @@ checkpoint.json
 Where can I safely resume?
 ```
 
+All of these live in `source/`.
+
 Use the narrowest appropriate memory layer.
 
 Do not dump every piece of information into `HISTORY.md` simply because it exists.
 
 ---
 
-# 7. `AGENT.md`
+# 8. `AGENT.md`
 
 `AGENT.md` defines the operating rules of the research environment.
 
@@ -281,6 +322,7 @@ It describes:
 * how persistent memory works
 * how experiments should be handled
 * how the workspace should be used
+* how GitHub Actions compute is used
 * how debugging should be handled
 * how results should be evaluated
 * how the agent should recover from context loss
@@ -296,7 +338,7 @@ Do not put experiment results here.
 
 ---
 
-# 8. `GOALS.md`
+# 9. `GOALS.md`
 
 `GOALS.md` contains the strategic objectives of the research.
 
@@ -328,7 +370,7 @@ Do not update it after every ordinary experiment.
 
 ---
 
-# 9. `RESEARCH_STATE.md`
+# 10. `RESEARCH_STATE.md`
 
 `RESEARCH_STATE.md` is the current high-level understanding of the research.
 
@@ -371,7 +413,7 @@ Update `RESEARCH_STATE.md` whenever the current understanding of the problem mat
 
 ---
 
-# 10. `HISTORY.md`
+# 11. `HISTORY.md`
 
 `HISTORY.md` is the long-term searchable memory of the research.
 
@@ -412,7 +454,7 @@ Its purpose is to prevent forgetting.
 
 For example, if six context compressions later you wonder:
 
-> “Did we already try this feature?”
+> "Did we already try this feature?"
 
 the answer should be discoverable by searching `HISTORY.md`.
 
@@ -442,7 +484,7 @@ Search for what you need.
 
 ---
 
-# 11. `DECISIONS.md`
+# 12. `DECISIONS.md`
 
 `DECISIONS.md` contains durable conclusions and research conventions.
 
@@ -471,7 +513,7 @@ If a decision is later overturned, do not silently erase it. Record why the new 
 
 ---
 
-# 12. `TODO.md`
+# 13. `TODO.md`
 
 `TODO.md` is the research queue.
 
@@ -509,7 +551,7 @@ Research evidence should determine priorities.
 
 ---
 
-# 13. `RUN_LOG.md`
+# 14. `RUN_LOG.md`
 
 `RUN_LOG.md` records execution facts.
 
@@ -535,7 +577,7 @@ Keep it factual.
 
 ---
 
-# 14. `experiments_registry.json`
+# 15. `experiments_registry.json`
 
 This is the structured experiment database.
 
@@ -575,7 +617,7 @@ That is a useful result.
 
 ---
 
-# 15. `checkpoint.json`
+# 16. `checkpoint.json`
 
 `checkpoint.json` stores machine-readable resume state.
 
@@ -595,11 +637,15 @@ Do not fabricate state.
 
 ---
 
-# 16. Utility Python Files
+# 17. Utility Python Files
 
-The Python files inside `agent/` are reusable infrastructure.
+The Python files inside `source/` are reusable infrastructure.
 
 They are not the research journal.
+
+### `train_pipeline.py`
+
+The canonical reproducible pipeline: 44 features, 3 regularized LightGBM configs, dual-seed 5-fold rank-averaged super-ensemble. Always commit the exact script behind any canonical score.
 
 ### `features.py`
 
@@ -619,15 +665,15 @@ Use for reusable general utilities.
 
 Keep these files reasonably reusable.
 
-One-off scratch code does not need to be placed here.
+One-off scratch code does not need to be placed here — it belongs in `state/` or the local scratch workspace.
 
-If a piece of research code becomes useful enough to reuse across experiments, move the reusable portion into the appropriate utility file.
+If a piece of research code becomes useful enough to reuse across experiments, move the reusable portion into the appropriate `source/` utility file.
 
 Do not bury research conclusions inside utility code.
 
 ---
 
-# 17. The Research Loop
+# 18. The Research Loop
 
 The basic process is:
 
@@ -642,9 +688,9 @@ Design an experiment
         ↓
 Implement it
         ↓
-Run it
+Run it (on GitHub Actions)
         ↓
-Evaluate it
+Download and evaluate it
         ↓
 Compare against the appropriate baseline
         ↓
@@ -665,7 +711,7 @@ The purpose of an experiment is to learn something.
 
 ---
 
-# 18. Experiments Should Answer Questions
+# 19. Experiments Should Answer Questions
 
 Prefer specific hypotheses over arbitrary changes.
 
@@ -689,11 +735,11 @@ Compare CatBoost against the canonical model using the same folds and metric.
 
 A good experiment should make it possible to say:
 
-> “This evidence supports X.”
+> "This evidence supports X."
 
 or:
 
-> “This evidence does not support X.”
+> "This evidence does not support X."
 
 Do not change five unrelated things simultaneously and then pretend the result explains one of them.
 
@@ -701,7 +747,7 @@ If several variables change, interpret the experiment as testing the combined co
 
 ---
 
-# 19. Baselines Matter
+# 20. Baselines Matter
 
 Always know what you are comparing against.
 
@@ -722,7 +768,7 @@ Whenever possible, compare experiments under the same evaluation protocol.
 
 ---
 
-# 20. Evaluation Discipline
+# 21. Evaluation Discipline
 
 Use an evaluation procedure appropriate to the task.
 
@@ -741,7 +787,7 @@ Check the evaluation pipeline.
 
 ---
 
-# 21. Leakage and Invalid Experiments
+# 22. Leakage and Invalid Experiments
 
 Always consider whether an apparent improvement is legitimate.
 
@@ -767,7 +813,7 @@ Invalid results are still useful research knowledge.
 
 ---
 
-# 22. Reproducibility
+# 23. Reproducibility
 
 Important experiments should be reproducible whenever practical.
 
@@ -780,14 +826,15 @@ Record things such as:
 * preprocessing
 * relevant training parameters
 * important environment assumptions
+* the exact GitHub Actions workflow task used
 
-Do not rely on an experiment being reproducible merely because “the same script exists.”
+Do not rely on an experiment being reproducible merely because "the same script exists."
 
 Future agents should be able to understand what actually changed.
 
 ---
 
-# 23. Feature Engineering
+# 24. Feature Engineering
 
 Feature engineering should be hypothesis-driven.
 
@@ -815,7 +862,7 @@ It is not automatically an explanation.
 
 ---
 
-# 24. Dataset Forensics
+# 25. Dataset Forensics
 
 Synthetic datasets deserve particular attention.
 
@@ -845,7 +892,7 @@ Do not mistake an interesting pattern for a generalizable signal.
 
 ---
 
-# 25. Negative Results Are Valuable
+# 26. Negative Results Are Valuable
 
 Do not only preserve successful experiments.
 
@@ -872,7 +919,7 @@ If a rejected idea becomes interesting again, explain what new evidence justifie
 
 ---
 
-# 26. Ensembling
+# 27. Ensembling
 
 Do not ensemble models merely because multiple models exist.
 
@@ -893,7 +940,7 @@ Conversely, several models with nearly identical predictions may add almost noth
 
 ---
 
-# 27. Debugging Is a Subtask, Not the Research Objective
+# 28. Debugging Is a Subtask, Not the Research Objective
 
 When something breaks, determine what kind of failure occurred:
 
@@ -942,7 +989,7 @@ Engineering work exists to enable research unless the engineering problem itself
 
 ---
 
-# 28. Context Compression Is Not a Stopping Condition
+# 29. Context Compression Is Not a Stopping Condition
 
 Context may be compressed.
 
@@ -954,7 +1001,7 @@ After context compression or uncertainty:
 
 1. recover the current state from `GOALS.md`, `RESEARCH_STATE.md`, `DECISIONS.md`, `TODO.md`, and the machine-readable state files
 2. search `HISTORY.md` for details
-3. inspect the relevant code
+3. inspect the relevant code in `source/`
 4. recover the current research objective
 5. continue
 
@@ -966,7 +1013,7 @@ Do not forget that the purpose of the environment is research.
 
 ---
 
-# 29. NEVER STOP RESEARCHING
+# 30. NEVER STOP RESEARCHING
 
 This is one of the most important operating rules.
 
@@ -1007,7 +1054,7 @@ Then pursue that question.
 
 ---
 
-# 30. Continuous Research Behavior
+# 31. Continuous Research Behavior
 
 The intended behavior is:
 
@@ -1049,7 +1096,7 @@ If the current TODO list is exhausted, derive new questions from the current res
 
 ---
 
-# 31. What to Investigate When the Obvious Work Is Done
+# 32. What to Investigate When the Obvious Work Is Done
 
 When no obvious next experiment exists, look for:
 
@@ -1076,7 +1123,7 @@ The next experiment should still have a research justification.
 
 ---
 
-# 32. Research State Should Drive Future Research
+# 33. Research State Should Drive Future Research
 
 After each meaningful result, update your understanding of the problem.
 
@@ -1102,7 +1149,7 @@ The goal is cumulative understanding.
 
 ---
 
-# 33. Persistent State Should Be Updated Continuously
+# 34. Persistent State Should Be Updated Continuously
 
 Important knowledge should not exist only in the current context.
 
@@ -1124,7 +1171,7 @@ The purpose of the memory system is to preserve useful knowledge, not to generat
 
 ---
 
-# 34. When to Use Each Memory File
+# 35. When to Use Each Memory File
 
 Use `AGENT.md` when you need to know **how the environment works**.
 
@@ -1144,13 +1191,15 @@ Use `experiments_registry.json` when you need to know **what experiments exist a
 
 Use `checkpoint.json` when you need to know **where interrupted work should resume**.
 
+All of these live in `source/`.
+
 Do not force every action into every file.
 
 Use each memory layer for what it is good at.
 
 ---
 
-# 35. Before an Experiment
+# 36. Before an Experiment
 
 Before a meaningful experiment, understand:
 
@@ -1172,13 +1221,13 @@ What result would support the hypothesis?
 What result would weaken or reject it?
 ```
 
-Then run the experiment.
+Then implement the experiment and run it on GitHub Actions.
 
 The more consequential the experiment, the more carefully this should be defined.
 
 ---
 
-# 36. After an Experiment
+# 37. After an Experiment
 
 After it runs, do not immediately jump to another arbitrary experiment.
 
@@ -1204,9 +1253,9 @@ Then preserve the useful knowledge and continue.
 
 ---
 
-# 37. Clean Persistence Boundary
+# 38. Clean Persistence Boundary
 
-Before pushing the research environment back to Hugging Face:
+Before committing and pushing the research environment back to GitHub:
 
 make sure the persistent repository represents the **current research**, not the entire history of the scratch filesystem.
 
@@ -1215,9 +1264,9 @@ The repository should be understandable to a fresh agent.
 A fresh agent should be able to:
 
 ```text
-retrieve dataset
+git clone
     ↓
-read AGENT.md
+read AGENT.md / PROMPT.md
     ↓
 understand goals
     ↓
@@ -1229,6 +1278,8 @@ see durable decisions
     ↓
 see promising next questions
     ↓
+trigger the next GitHub Actions job
+    ↓
 continue researching
 ```
 
@@ -1236,7 +1287,7 @@ That is the standard.
 
 ---
 
-# 38. What "Done" Means
+# 39. What "Done" Means
 
 A specific experiment can be done.
 
@@ -1264,15 +1315,17 @@ Then research continues.
 
 ---
 
-# 39. Final Operating Principle
+# 40. Final Operating Principle
 
 This environment is a persistent research laboratory.
 
-The local filesystem is the scratch bench.
+The local filesystem and `state/` are the scratch bench.
 
-The Hugging Face dataset is the persistent lab notebook and source of truth.
+The GitHub repository is the persistent lab notebook and source of truth.
 
-The code is the experimental apparatus.
+GitHub Actions is the compute engine.
+
+The code in `source/` is the experimental apparatus.
 
 The experiments are the investigations.
 
@@ -1290,6 +1343,8 @@ Remember:
 >
 > **Experiments are how hypotheses are tested.**
 >
+> **GitHub Actions is where the compute runs; local is orchestration only.**
+>
 > **History prevents forgetting.**
 >
 > **State preserves current understanding.**
@@ -1298,7 +1353,7 @@ Remember:
 >
 > **The TODO queue preserves promising questions.**
 >
-> **The local workspace can be messy.**
+> **The scratch workspace can be messy.**
 >
 > **The persistent repository should be clean.**
 >

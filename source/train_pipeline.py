@@ -19,7 +19,7 @@ train_competition.py. It implements:
     (dual-seed super-ensemble, matching EXP-014's architecture)
 
 Usage:
-    python agent/train_pipeline.py [--seeds 42 100] [--single-seed]
+    python source/train_pipeline.py [--seeds 42 100] [--single-seed]
 """
 
 import argparse

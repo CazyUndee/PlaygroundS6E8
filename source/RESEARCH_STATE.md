@@ -17,7 +17,7 @@ The persistent repo was recovered from Hugging Face, but its state was
   RESEARCH_STATE/checkpoint/registry still described the *pre-recovery* state.
 
 So the canonical pipeline was lost a second time, and this session
-reconstructed it (`agent/train_pipeline.py`) from the architecture described
+reconstructed it (`source/train_pipeline.py`) from the architecture described
 in HISTORY.md. It is now committed to the persistent repo (GitHub).
 
 ## Champion (reproducible, current)
@@ -39,7 +39,7 @@ program. Subgroup difficulty gradient reproduced on the champion
 
 ## Canonical pipeline (44 features)
 
-`agent/train_pipeline.py::build_features`:
+`source/train_pipeline.py::build_features`:
 
 1. 9 raw numeric (`age`, 4 screen-time cols, `sleep_hours`, 2 engagement counts, `weekend_screen_time`)
 2. 3 categorical (`gender`, `stress_level`, `academic_work_impact`) — native LightGBM `category` dtype
