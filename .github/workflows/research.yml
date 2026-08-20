@@ -8,13 +8,14 @@ on:
         type: choice
         options:
           - exp023_canonical
+          - exp027
           - screen
           - tune
           - ablate
           - forensics
           - smoke
           - all
-        default: exp023_canonical
+        default: exp027
       feature:
         description: "Feature to screen (used when task == screen)"
         type: choice
@@ -234,4 +235,47 @@ jobs:
         run: |
           python -c "import source.train_pipeline, source.features, source.models, source.ensemble, source.utils; print('source imports OK')"
           python -c "import state.exp_screen_features; print('state->source import chain OK')"
+          python -c "import state.exp027_leaves31; print('exp027 script import OK')"
           python -c "import pandas as pd; from source.train_pipeline import build_features, feature_columns; df = build_features(pd.read_csv('train.csv', nrows=2000)); assert len(feature_columns()) == 44; print('build_features OK (44 cols)')"
+
+  exp027:
+    if: ${{ inputs.task == 'exp027' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EXP-027 dual-seed tune scan (leaves_31, leaves_31+sub095, canonical)
+        run: |
+          python -u state/exp027_leaves31.py 2>&1 | tee exp027_run.log
+          echo "=== tail ==="
+          tail -20 exp027_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp027
+          cp exp027_results.json artifacts/exp027/
+          cp exp027_run.log artifacts/exp027/
+          for arm in exp027_leaves_31 exp027_leaves_31_sub095 exp027_canonical_63; do
+            if [ -d "$arm" ]; then
+              mkdir -p "artifacts/exp027/$arm"
+              cp "$arm"/*.csv "$arm"/*.npy "artifacts/exp027/$arm/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp027-results
+          path: artifacts/exp027/
+          retention-days: 90
