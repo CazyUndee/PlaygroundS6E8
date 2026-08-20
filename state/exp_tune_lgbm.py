@@ -3,10 +3,16 @@ single-seed (42) 5-fold, compared against the EXP-023 lgbm_63 baseline
 (0.96380). Runs on GitHub Actions.
 
 Usage:
-    python exp_tune_lgbm.py
+    python state/exp_tune_lgbm.py
 """
 import json
+import os
+import sys
 import time
+
+# Make the repo root importable so this script can import the `source`
+# package (sibling of `state/`) regardless of the invocation directory.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
@@ -15,7 +21,7 @@ from sklearn.model_selection import StratifiedKFold
 
 import lightgbm as lgb
 
-from agent.train_pipeline import COMMON_PARAMS, N_SPLITS, TARGET, build_features, feature_columns
+from source.train_pipeline import COMMON_PARAMS, N_SPLITS, TARGET, build_features, feature_columns
 
 # Candidate configs: vary one or two knobs around the canonical lgbm_63
 # (num_leaves=63, lr=0.12, reg_alpha=0.5, reg_lambda=5, colsample=0.8,

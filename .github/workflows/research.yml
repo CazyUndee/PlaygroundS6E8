@@ -12,6 +12,7 @@ on:
           - tune
           - ablate
           - forensics
+          - smoke
           - all
         default: exp023_canonical
       feature:
@@ -52,7 +53,7 @@ jobs:
 
       - name: Run canonical dual-seed 5-fold pipeline (EXP-023)
         run: |
-          python -u agent/train_pipeline.py --out submission_matched_super.csv 2>&1 | tee exp023_run.log
+          python -u source/train_pipeline.py --out submission_matched_super.csv 2>&1 | tee exp023_run.log
           echo "=== tail ==="
           tail -20 exp023_run.log
 
@@ -90,7 +91,7 @@ jobs:
 
       - name: Screen feature (lgbm_63, seed-42, 5-fold)
         run: |
-          python -u exp_screen_features.py --feature ${{ inputs.feature }} 2>&1 | tee screen_run.log
+          python -u state/exp_screen_features.py --feature ${{ inputs.feature }} 2>&1 | tee screen_run.log
           echo "=== tail ==="
           tail -20 screen_run.log
 
@@ -127,7 +128,7 @@ jobs:
 
       - name: Hyperparameter scan (lgbm_63, seed-42, 5-fold)
         run: |
-          python -u exp_tune_lgbm.py 2>&1 | tee tune_run.log
+          python -u state/exp_tune_lgbm.py 2>&1 | tee tune_run.log
           echo "=== tail ==="
           tail -20 tune_run.log
 
@@ -163,7 +164,7 @@ jobs:
 
       - name: Feature-group ablation (lgbm_63, seed-42, 5-fold)
         run: |
-          python -u exp_ablate.py 2>&1 | tee ablate_run.log
+          python -u state/exp_ablate.py 2>&1 | tee ablate_run.log
           echo "=== tail ==="
           tail -20 ablate_run.log
 
@@ -200,7 +201,7 @@ jobs:
       - name: Run reproducible forensics
         run: |
           mkdir -p artifacts/forensics
-          for f in analysis/forensics_*.py; do
+          for f in state/analysis/forensics_*.py; do
             name=$(basename "$f" .py)
             python "$f" > "artifacts/forensics/${name}.out" 2>&1 && echo "OK $name" || echo "FAILED $name"
           done
@@ -211,3 +212,26 @@ jobs:
           name: forensics-outputs
           path: artifacts/forensics/
           retention-days: 90
+
+  smoke:
+    if: ${{ inputs.task == 'smoke' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Import + feature smoke test
+        run: |
+          python -c "import source.train_pipeline, source.features, source.models, source.ensemble, source.utils; print('source imports OK')"
+          python -c "import state.exp_screen_features; print('state->source import chain OK')"
+          python -c "import pandas as pd; from source.train_pipeline import build_features, feature_columns; df = build_features(pd.read_csv('train.csv', nrows=2000)); assert len(feature_columns()) == 44; print('build_features OK (44 cols)')"

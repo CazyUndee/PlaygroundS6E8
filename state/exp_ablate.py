@@ -3,10 +3,16 @@ seed-42, 5-fold), on GitHub Actions. Quantifies the contribution of each
 feature family to the EXP-023 lgbm_63 baseline (OOF 0.96380).
 
 Usage:
-    python exp_ablate.py
+    python state/exp_ablate.py
 """
 import json
+import os
+import sys
 import time
+
+# Make the repo root importable so this script can import the `source`
+# package (sibling of `state/`) regardless of the invocation directory.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
@@ -15,7 +21,7 @@ from sklearn.model_selection import StratifiedKFold
 
 import lightgbm as lgb
 
-from agent.train_pipeline import (
+from source.train_pipeline import (
     COMMON_PARAMS,
     MODEL_CONFIGS,
     N_SPLITS,

@@ -1,7 +1,7 @@
 """Analyze the OOF/test arrays saved by train_pipeline.py (EXP-023).
 
 Usage (from repo root, after downloading the exp023-results artifact):
-    python analysis/analyze_oof.py [path_to_oof_dir]
+    python state/analysis/analyze_oof.py [path_to_oof_dir]
 
 Reads oof_super.npy, oof_seed{42,100}*.npy, test arrays; prints:
   - per-model and per-seed OOF AUC

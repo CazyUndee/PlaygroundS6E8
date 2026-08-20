@@ -80,7 +80,7 @@ The original train_competition.py behind EXP-014 (0.96448) was only ever
 local scratch and was permanently lost. This is the single biggest process
 failure in the program's history. Never repeat it.
 
-**D15 — Persistent repo (GitHub/HF) is a clean research notebook, not a
+**D15 — Persistent repo (GitHub) is a clean research notebook, not a
 filesystem dump.** Scratch files live locally only. A fresh agent must be
 able to recover the full research from the repo alone.
 
