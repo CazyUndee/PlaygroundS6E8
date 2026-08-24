@@ -9,6 +9,8 @@ on:
         options:
           - exp023_canonical
           - exp027
+          - exp028_combo
+          - exp029_triple_seed
           - screen
           - tune
           - ablate
@@ -278,4 +280,88 @@ jobs:
         with:
           name: exp027-results
           path: artifacts/exp027/
+          retention-days: 90
+
+  exp028_combo:
+    if: ${{ inputs.task == 'exp028_combo' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EXP-028 second-order combos + leaves grid
+        run: |
+          python -u state/exp028_leaves31_combo.py 2>&1 | tee exp028_run.log
+          echo "=== tail ==="
+          tail -30 exp028_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp028
+          cp exp028_results.json artifacts/exp028/
+          cp exp028_run.log artifacts/exp028/
+          for arm in exp028_leaves_31 exp028_leaves_31_lr010 exp028_leaves_31_mcs50 exp028_leaves_31_lr010_mcs50 exp028_canonical_63; do
+            if [ -d "$arm" ]; then
+              mkdir -p "artifacts/exp028/$arm"
+              cp "$arm"/*.csv "$arm"/*.npy "artifacts/exp028/$arm/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp028-results
+          path: artifacts/exp028/
+          retention-days: 90
+
+  exp029_triple_seed:
+    if: ${{ inputs.task == 'exp029_triple_seed' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EXP-029 triple fold-partition seed
+        run: |
+          python -u state/exp029_triple_seed.py 2>&1 | tee exp029_run.log
+          echo "=== tail ==="
+          tail -30 exp029_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp029
+          cp exp029_results.json artifacts/exp029/
+          cp exp029_run.log artifacts/exp029/
+          for arm in exp029_leaves_31 exp029_canonical_63; do
+            if [ -d "$arm" ]; then
+              mkdir -p "artifacts/exp029/$arm"
+              cp "$arm"/*.csv "$arm"/*.npy "artifacts/exp029/$arm/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp029-results
+          path: artifacts/exp029/
           retention-days: 90
