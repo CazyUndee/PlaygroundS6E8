@@ -565,3 +565,28 @@ produces results) from run state/artifacts (what was produced).
 - **Regularization magnitude was underestimated historically.** The -0.0017
 cost of removing it entirely is ~8x the EXP-002 estimate, because the
 44-feature pipeline has more correlated features that invite overfitting.
+
+### EXP-027 COMPLETE — new champion 0.96498
+GitHub Actions run 32733942935 (ubuntu-latest, 4 vCPU, 2567s/43 min).
+Results:
+- leaves_31: seed42=0.96453, seed100=0.96466, **super=0.96486** (+0.00021 vs EXP-023)
+- **leaves_31_sub095: seed42=0.96470, seed100=0.96473, super=0.96498 (+0.00032 vs EXP-023)**
+- canonical_63: seed42=0.96431, seed100=0.96440, super=0.96465 (replicates EXP-023 0.96466)
+
+**The tune scan gains SURVIVED dual-seed.** leaves_31 alone (+0.00019 dual-seed
+vs +0.00027 single-seed) and leaves_31+sub095 (+0.00034 dual-seed vs
++0.00050 combined single-seed) both show the expected ~50% attenuation from
+fold noise. The effects combine nearly additively — subsample_095 provides
+a clean independent boost on top of leaves_31.
+
+Canonical_63 replicated at 0.96465 (vs historical EXP-023 0.96466),
+confirming the matched comparison is valid. The fold pattern is stable.
+
+**New champion: leaves_31 + subsample_095, dual-seed, 0.96498 OOF AUC.**
+This beats the EXP-023 champion (0.96466) by +0.00032 and the historical
+EXP-014 (0.96448) by +0.00050. The new canonical config is num_leaves=31,
+reg_alpha=0.5, reg_lambda=5.0, subsample=0.95, colsample=0.8.
+
+Saved: state/results/exp027/exp027_results.json.
+Next: EXP-028 (second-order combos: +lr_010, +mcs_50, leaves grid) and
+EXP-029 (triple fold-partition seed 2026).

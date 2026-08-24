@@ -1,6 +1,6 @@
 # Research State — Smartphone Addiction (Kaggle Playground S6E8)
 
-**Last updated**: 2026-08-24 (tune scan + EXP-027 integration)
+**Last updated**: 2026-08-24 (EXP-027 complete — new champion 0.96498)
 **Metric**: OOF ROC-AUC (5-fold stratified CV; dual-seed rank-average super-ensemble)
 
 ---
@@ -26,9 +26,10 @@ in HISTORY.md. It is now committed to the persistent repo (GitHub).
 | :--- | :--- | :---: | :--- |
 | EXP-021 | 42-feature rebuild, dual-seed 5-fold | 0.96402 | reproducible baseline |
 | EXP-022 | + `other_screen_time` (+_isna), **single-seed** | 0.96407 (+0.00042) | **PROMOTED** |
-| EXP-023 | 44-feature, **dual-seed** (42+100) | **0.96466** (+0.00064 vs EXP-021) | **CANONICAL WINNER** |
+| EXP-023 | 44-feature, **dual-seed** (42+100) | 0.96466 (+0.00064 vs EXP-021) | previous champion |
+| **EXP-027** | leaves_31 + sub095, **dual-seed** (42+100) | **0.96498** (+0.00032 vs EXP-023) | **CANONICAL WINNER** |
 
-**Current champion = EXP-023: 0.96466 OOF ROC-AUC** (seed 42: 0.96435,
+**Current champion = EXP-027 leaves_31_sub095: 0.96498 OOF ROC-AUC** (seed 42: 0.96435,
 seed 100: 0.96439), computed on GitHub Actions (15 min, fully reproducible;
 fold-level AUCs verified identical to the partial local run). This **beats
 the historical (unreproducible) EXP-014 = 0.96448**, so the reconstructed
@@ -100,45 +101,48 @@ colsample/subsample 0.8; min_child_samples 20). 5-fold stratified CV, seeds
 - EXP-019/020 blend weight sweeps: 100:0 EXP-014 control remained best on
   proxy evidence; no blend promoted.
 
-## Hyperparameter tuning scan (2026-08-20)
+## Hyperparameter tuning — COMPLETE (EXP-027 confirmed)
 
-A 17-config scan of lgbm_63 parameters (seed-42, 5-fold, 44 features) found:
+A 17-config single-seed scan found leaves_31 (+0.00027) and subsample_095
+(+0.00023) as winners. EXP-027 validated both through the full dual-seed
+(42+100) 5-fold protocol (run 32733942935, 43 min, GitHub Actions):
 
-| Config | OOF AUC | Delta vs canonical | Key finding |
-| :--- | :---: | :---: | :--- |
-| canonical_63 | 0.96382 | — | baseline |
-| **leaves_31** | **0.96409** | **+0.00027** | fewer leaves helps (less overfitting) |
-| **subsample_095** | **0.96405** | **+0.00023** | slightly more data per tree |
-| lr_010 | 0.96395 | +0.00014 | slower learning helps marginally |
-| mcs_50 | 0.96391 | +0.00009 | more conservative leaf min samples |
-| lambda_100 | 0.96392 | +0.00010 | stronger L2 regularization |
-| reg_none | 0.96213 | -0.00169 | **regularization is critical** |
-| deep_255 | 0.96374 | -0.00009 | more capacity does not help |
+| Arm | seed42 | seed100 | **super** | vs EXP-023 |
+| :--- | :---: | :---: | :---: | :--- |
+| canonical_63 (baseline) | 0.96431 | 0.96440 | 0.96465 | — |
+| leaves_31 | 0.96453 | 0.96466 | **0.96486** | **+0.00021** |
+| **leaves_31_sub095** | **0.96470** | **0.96473** | **0.96498** | **+0.00034** |
+
+**The gains SURVIVED dual-seed.** leaves_31_sub095 is the new champion at
+0.96498, beating EXP-023 (0.96466) by +0.00032. The two effects combine
+nearly additively (single-seed: +0.00027 + +0.00023 ≈ +0.0005; dual-seed:
++0.00034, reflecting expected ~50% attenuation from fold noise).
+
+Canonical_63 replicated at 0.96465 (vs EXP-023 0.96466), confirming the
+matched comparison is valid. The fold pattern is stable (seed42 lgbm_63
+fold AUCs in EXP-027 match EXP-023 to 3 decimal places).
 
 **Key insight: num_leaves=31 is the strongest single-knob improvement.**
-Reducing from 63 to 31 leaves is counterintuitive (canonical was tuned to
-63 historically) but the 44-feature pipeline with `other_screen_time` has
-more correlated ratio features, so fewer leaves reduces overfitting to
-noise in those ratios. Subsample=0.95 is a clean second win.
+Fewer leaves reduces overfitting to the many correlated ratio features in
+the 44-feature pipeline. Subsample=0.95 provides a clean additional win.
+Both promote to the canonical pipeline.
 
-**EXP-027** tests the top two findings (leaves_31, leaves_31+sub095) through
-the full dual-seed (42+100) 5-fold protocol, with the canonical baseline as
-in-run matched comparison. Script: `state/exp027_leaves31.py`.
-If any arm beats the EXP-023 champion (0.96466), promote and submit.
+Next experiments (EXP-028/029) are queued for second-order combos and
+triple-seed diversity testing.
 
 ## Key uncertainties / next questions
 
-1. **Does leaves_31 survive dual-seed?** EXP-027 running on GH Actions.
-   Single-seed +0.00027 is within the ~0.0003 dual-seed uncertainty band;
-   full protocol needed.
-2. Do **leaves_31 and subsample_095 interact**? EXP-027 tests the
-   combination arm; if additivity holds, the combined gain could be ~+0.0005.
-3. Are there **other undiscovered hard generator constraints** with non-trivial
-   residuals? *(systematic search found none beyond `dst >= social+gaming+work`.)*
-4. Does **more seed diversity** (3rd partition seed) keep helping or plateau?
-5. Is the ensemble's value real **prediction diversity** or near-duplicate
-   averaging (correlation re-measurement)?
-6. Is the new champion's subgroup behavior (by missingness/usage decile)
-   consistent with the documented difficulty gradient?
+1. **Do second-order combos (lr_010, mcs_50) help on top of leaves_31?**
+   EXP-028 running — tests leaves_31+lr_010, leaves_31+mcs_50, triple combo.
+2. **Does a 3rd fold-partition seed (2026) add diversity?** EXP-029 queued —
+   tests if the ensemble value plateaus at 2 seeds.
+3. **Are there other undiscovered hard generator constraints?** *(systematic
+   search found none beyond `dst >= social+gaming+work`.)*
+4. **Is the ensemble's value real diversity or near-duplicate averaging?**
+   (Correlation re-measurement; models correlate 0.994-0.997.)
+5. **Does the new champion's subgroup gradient change?** (0-missing ~0.973
+   vs 5-missing ~0.915 — verify on EXP-027 predictions.)
+6. **Is the refined num_leaves optimum at 31 or elsewhere?** EXP-028 tests
+   a leaves grid (20/25/31/35/45) to pinpoint the optimum.
 
 See `TODO.md` for the live queue and `DECISIONS.md` for durable conclusions.

@@ -131,5 +131,11 @@ regularization entirely costs -0.0017 OOF AUC on the 44-feature pipeline,
 from the rebuild create more overfitting opportunities. Regularization is
 load-bearing and must never be removed.
 
-**D23 — subsample=0.95 is a clean second win.** +0.00023 single-seed; test
-for additivity with leaves_31 in EXP-027.
+**D23 — subsample=0.95 is a clean second win.** +0.00023 single-seed.
+In EXP-027, combined with leaves_31 it gave +0.00034 dual-seed (best result).
+
+**D24 — leaves_31 + subsample_095 is the new canonical configuration.**
+EXP-027 dual-seed (42+100) 5-fold: 0.96498 OOF AUC, beating EXP-023
+(0.96466) by +0.00032. The two effects combine nearly additively.
+Canonical config: num_leaves=31, reg_alpha=0.5, reg_lambda=5.0,
+subsample=0.95. Replaces num_leaves=63, subsample=0.80.

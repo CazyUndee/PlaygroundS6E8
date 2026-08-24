@@ -1,0 +1,46 @@
+{
+  "leaves_31": {
+    "seeds": [
+      42,
+      100
+    ],
+    "seed42_oof_auc": 0.964534600016001,
+    "seed100_oof_auc": 0.964657903488287,
+    "super_ensemble_oof_auc": 0.964859089727776,
+    "arm_config": {
+      "num_leaves": 31,
+      "reg_alpha": 0.5,
+      "reg_lambda": 5.0
+    }
+  },
+  "leaves_31_sub095": {
+    "seeds": [
+      42,
+      100
+    ],
+    "seed42_oof_auc": 0.9647009400210204,
+    "seed100_oof_auc": 0.9647261078278906,
+    "super_ensemble_oof_auc": 0.9649822378675366,
+    "arm_config": {
+      "num_leaves": 31,
+      "reg_alpha": 0.5,
+      "reg_lambda": 5.0,
+      "subsample": 0.95
+    }
+  },
+  "canonical_63": {
+    "seeds": [
+      42,
+      100
+    ],
+    "seed42_oof_auc": 0.9643077619680862,
+    "seed100_oof_auc": 0.9643967320097648,
+    "super_ensemble_oof_auc": 0.9646468362830721,
+    "arm_config": {
+      "num_leaves": 63,
+      "reg_alpha": 0.5,
+      "reg_lambda": 5.0
+    }
+  },
+  "wallclock_seconds": 2566.507759809494
+}

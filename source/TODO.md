@@ -18,11 +18,10 @@ command sequence — let evidence decide.
       ALL NEUTRAL (deltas -0.00003 / -0.00003 / 0.00000). Trees already
       capture combinations; direction exhausted.
 
-- [ ] **EXP-027 — dual-seed tune winners**: leaves_31 (+0.00027 single-seed)
-      and subsample_095 (+0.00023) through full dual-seed (42+100) 5-fold
-      protocol, with canonical baseline for matched comparison. Script:
-      `state/exp027_leaves31.py`. *(launched on GitHub Actions)*
-      If any arm beats 0.96466, promote to canonical and submit.
+- [x] **EXP-027**: COMPLETED — **NEW CHAMPION 0.96498** (leaves_31+sub095,
+      dual-seed 42+100). Beats EXP-023 (0.96466) by +0.00032. Both
+      tune-scan winners survived dual-seed. Canonical_63 replicated 0.96465.
+      Canonical config updated: num_leaves=31, subsample=0.95.
 
 - [ ] **EXP-025 — count/sleep nonlinearity (LOW PRIORITY now)**: app_opens
       and sleep have nonlinear profiles, but given the age encoding failed,
@@ -32,7 +31,14 @@ command sequence — let evidence decide.
 - [x] **Hyperparameter tuning scan**: COMPLETED. 17 configs scanned.
       Winners: leaves_31 (+0.00027), subsample_095 (+0.00023), lr_010
       (+0.00014). Regularization is critical (reg_none = -0.0017).
-      EXP-027 tests top 2 findings through dual-seed protocol.
+
+- [ ] **EXP-028 — second-order combos**: leaves_31+lr_010, leaves_31+mcs_50,
+      triple combo, and refined leaves grid (20/25/31/35/45). Script:
+      `state/exp028_leaves31_combo.py`. *(queued for GH Actions)*
+
+- [ ] **EXP-029 — triple fold-partition seed**: adds seed=2026 to the
+      super-ensemble to test if more diversity helps or plateaus.
+      Script: `state/exp029_triple_seed.py`. *(queued for GH Actions)*
 
 ## P1 (strong hypotheses, quick reads)
 

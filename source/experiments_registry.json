@@ -816,7 +816,7 @@
     "experiment_id": "EXP-027",
     "parent_hypothesis": "Tune scan found leaves_31 (+0.00027) and subsample_095 (+0.00023) as the strongest hyperparameter improvements. Test both through the full dual-seed (42+100) 5-fold super-ensemble protocol to confirm whether they beat the EXP-023 champion (0.96466).",
     "track": "HYPERPARAMETER_TUNING",
-    "status": "RUNNING_ON_GITHUB_ACTIONS",
+    "status": "PROMOTED_NEW_CANONICAL",
     "configuration": {
       "arms": [
         "leaves_31: num_leaves=31 (all 3 configs), reg_alpha=0.5, reg_lambda=5.0",
@@ -832,16 +832,32 @@
     },
     "baseline_id": "EXP-023",
     "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
-    "auc": null,
-    "fold_auc": {},
-    "delta": null,
-    "runtime": null,
-    "compute_cost": "~15 min on GH Actions (estimated)",
+    "auc": 0.96498,
+    "fold_auc": {
+      "leaves_31": {
+        "seed42_ensemble_auc": 0.96453,
+        "seed100_ensemble_auc": 0.96466,
+        "super_ensemble_auc": 0.96486
+      },
+      "leaves_31_sub095": {
+        "seed42_ensemble_auc": 0.96470,
+        "seed100_ensemble_auc": 0.96473,
+        "super_ensemble_auc": 0.96498
+      },
+      "canonical_63": {
+        "seed42_ensemble_auc": 0.96431,
+        "seed100_ensemble_auc": 0.96440,
+        "super_ensemble_auc": 0.96465
+      }
+    },
+    "delta": 0.00032,
+    "runtime": 2567.0,
+    "compute_cost": "43 min (GitHub Actions ubuntu-latest, 4 vCPU)",
     "artifact_paths": {
       "script": "state/exp027_leaves31.py",
       "tune_scan": "state/tune_results/tune_results.json"
     },
-    "conclusion": "Tune scan on lgbm_63 (17 configs, seed-42, 5-fold) found leaves_31 = 0.96409 (+0.00027) and subsample_095 = 0.96405 (+0.00023) as winners. Regularization is critical (reg_none = 0.96213, -0.0017). EXP-027 runs the top 2 findings + canonical baseline through dual-seed protocol for matched comparison.",
-    "next_action": "Check GH Actions run results; if any arm beats 0.96466, promote and update canonical pipeline."
+    "conclusion": "NEW REPRODUCIBLE CHAMPION. leaves_31+sub095 dual-seed super-ensemble = 0.96498, beating EXP-023 (0.96466) by +0.00032. Both tune-scan winners survived dual-seed validation. Canonical_63 replicated at 0.96465 confirming matched comparison. The subsample_095 effect is additive with leaves_31. Wallclock 43 min on GitHub Actions.",
+    "next_action": "Promote leaves_31+sub095 to canonical config. Launch EXP-028 (second-order combos: +lr_010, +mcs_50, leaves grid) and EXP-029 (triple seed 2026)."
   }
 ]
