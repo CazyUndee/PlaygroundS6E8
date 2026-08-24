@@ -117,3 +117,19 @@ The canonical pipeline and every experiment run on hosted Ubuntu runners via
 `.github/workflows/research.yml` (workflow_dispatch), with results downloaded
 as artifacts, curated into the memory files, and committed back to GitHub.
 Never run model training locally again.
+
+**D21 — num_leaves=31 beats num_leaves=63 on the 44-feature pipeline.**
+The tune scan found leaves_31 = 0.96409 (+0.00027 vs canonical 0.96382).
+Fewer leaves reduces overfitting to the many correlated ratio features in
+the 44-feature pipeline (more redundant features than the historical 36-feature
+set). This is counterintuitive but robust across folds. Awaiting dual-seed
+confirmation (EXP-027).
+
+**D22 — Regularization cost was underestimated historically.** Removing L1/L2
+regularization entirely costs -0.0017 OOF AUC on the 44-feature pipeline,
+~8x the EXP-002 estimate (+0.00022). The additional correlated ratio features
+from the rebuild create more overfitting opportunities. Regularization is
+load-bearing and must never be removed.
+
+**D23 — subsample=0.95 is a clean second win.** +0.00023 single-seed; test
+for additivity with leaves_31 in EXP-027.

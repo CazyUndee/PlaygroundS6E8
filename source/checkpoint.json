@@ -2,7 +2,7 @@
   "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
   "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
   "last_recovered_from": "github:origin (previously huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446)",
-  "current_phase": "PHASE_12_FEATURE_DIRECTION_EXHAUSTED_TUNING",
+  "current_phase": "PHASE_13_HYPERPARAMETER_TUNING_EXP027",
   "compute_environment": "ALL model compute runs on GitHub Actions (ubuntu-latest, 4 vCPU) via .github/workflows/research.yml; local machine is orchestration only (push / gh workflow run / download artifacts / curate + commit results)",
   "canonical_score": 0.96466,
   "canonical_experiment": "EXP-023 (44-feature dual-seed super-ensemble, seeds 42+100; seed42=0.96435 seed100=0.96439)",
@@ -19,11 +19,20 @@
     "delta_vs_exp021_seed42": 0.00042
   },
   "active_experiment": {
-    "id": "tune",
-    "description": "lgbm_63 hyperparameter scan (lr, leaves, min_child_samples, colsample, subsample, reg, capacity probes) vs EXP-023 baseline",
+    "id": "EXP-027",
+    "description": "Dual-seed (42+100) 5-fold super-ensemble of tune-scan winners: leaves_31 (+0.00027 single-seed) and leaves_31+subsample_095 (+0.00023), vs canonical_63 baseline",
     "status": "running_on_github_actions",
-    "script": "state/exp_tune_lgbm.py",
-    "command": "gh workflow run research.yml -f task=tune"
+    "script": "state/exp027_leaves31.py",
+    "command": "gh workflow run research.yml -f task=exp027"
+  },
+  "tune_scan_results": {
+    "scan_script": "state/exp_tune_lgbm.py",
+    "scan_date": "2026-08-20",
+    "configs_tested": 17,
+    "baseline_oof": 0.96382,
+    "winner_1": {"config": "leaves_31", "oof": 0.96409, "delta": "+0.00027"},
+    "winner_2": {"config": "subsample_095", "oof": 0.96405, "delta": "+0.00023"},
+    "critical_finding": "reg_none = 0.96213 (-0.0017) — regularization is load-bearing"
   },
   "feature_screen_results": {
     "all_four_neutral_or_negative": true,
@@ -45,7 +54,11 @@
   "completed_experiments": [
     "EXP-000..EXP-020 (historical, see experiments_registry.json)",
     "EXP-021: 42-feature reproducible rebuild, dual-seed (0.96402)",
-    "EXP-022: +other_screen_time single-seed (0.96407, +0.00042) [PROMOTED]"
+    "EXP-022: +other_screen_time single-seed (0.96407, +0.00042) [PROMOTED]",
+    "EXP-023: 44-feature dual-seed champion (0.96466) [CANONICAL WINNER]",
+    "EXP-024: age encoding — REJECTED (-0.00029)",
+    "EXP-026: combination features — ALL NEUTRAL",
+    "Hyperparameter tuning scan: 17 configs, leaves_31 winner (+0.00027)"
   ],
   "rejected_experiments": [
     "EXP-001 subgroup quantile ranks",
@@ -57,9 +70,9 @@
     "EXP-019/020 blend sweeps (no promotion, proxy evidence)"
   ],
   "next_experiments": [
-    "EXP-023 (running): dual-seed 44-feature result + submission",
-    "Systematic generator-constraint search (other hidden sums/bounds)",
-    "DART boosting diversity test",
+    "EXP-027 (running): dual-seed leaves_31 + subsample_095 validation",
+    "If EXP-027 wins: promote leaves_31 to canonical, retrain, submit",
+    "DART boosting diversity test (post-EXP-027)",
     "Third fold-partition seed super-ensemble",
     "Missingness conjunction flags (cheap, low prior)",
     "Feature ablation of other_screen_time",

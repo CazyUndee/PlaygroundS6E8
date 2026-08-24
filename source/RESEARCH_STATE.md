@@ -1,6 +1,6 @@
 # Research State — Smartphone Addiction (Kaggle Playground S6E8)
 
-**Last updated**: 2026-08-17 (recovery session)
+**Last updated**: 2026-08-24 (tune scan + EXP-027 integration)
 **Metric**: OOF ROC-AUC (5-fold stratified CV; dual-seed rank-average super-ensemble)
 
 ---
@@ -100,15 +100,41 @@ colsample/subsample 0.8; min_child_samples 20). 5-fold stratified CV, seeds
 - EXP-019/020 blend weight sweeps: 100:0 EXP-014 control remained best on
   proxy evidence; no blend promoted.
 
+## Hyperparameter tuning scan (2026-08-20)
+
+A 17-config scan of lgbm_63 parameters (seed-42, 5-fold, 44 features) found:
+
+| Config | OOF AUC | Delta vs canonical | Key finding |
+| :--- | :---: | :---: | :--- |
+| canonical_63 | 0.96382 | — | baseline |
+| **leaves_31** | **0.96409** | **+0.00027** | fewer leaves helps (less overfitting) |
+| **subsample_095** | **0.96405** | **+0.00023** | slightly more data per tree |
+| lr_010 | 0.96395 | +0.00014 | slower learning helps marginally |
+| mcs_50 | 0.96391 | +0.00009 | more conservative leaf min samples |
+| lambda_100 | 0.96392 | +0.00010 | stronger L2 regularization |
+| reg_none | 0.96213 | -0.00169 | **regularization is critical** |
+| deep_255 | 0.96374 | -0.00009 | more capacity does not help |
+
+**Key insight: num_leaves=31 is the strongest single-knob improvement.**
+Reducing from 63 to 31 leaves is counterintuitive (canonical was tuned to
+63 historically) but the 44-feature pipeline with `other_screen_time` has
+more correlated ratio features, so fewer leaves reduces overfitting to
+noise in those ratios. Subsample=0.95 is a clean second win.
+
+**EXP-027** tests the top two findings (leaves_31, leaves_31+sub095) through
+the full dual-seed (42+100) 5-fold protocol, with the canonical baseline as
+in-run matched comparison. Script: `state/exp027_leaves31.py`.
+If any arm beats the EXP-023 champion (0.96466), promote and submit.
+
 ## Key uncertainties / next questions
 
-1. Does the EXP-022 `other_screen_time` gain survive the **full dual-seed**
-   protocol? (EXP-023 — running.)
-2. Does explicitly encoding the **nonlinear `age` signal** beat raw numeric
-   age? (EXP-024 candidate.)
+1. **Does leaves_31 survive dual-seed?** EXP-027 running on GH Actions.
+   Single-seed +0.00027 is within the ~0.0003 dual-seed uncertainty band;
+   full protocol needed.
+2. Do **leaves_31 and subsample_095 interact**? EXP-027 tests the
+   combination arm; if additivity holds, the combined gain could be ~+0.0005.
 3. Are there **other undiscovered hard generator constraints** with non-trivial
-   residuals? *(systematic search this session found none beyond the known
-   `dst >= social+gaming+work`; see HISTORY.)*
+   residuals? *(systematic search found none beyond `dst >= social+gaming+work`.)*
 4. Does **more seed diversity** (3rd partition seed) keep helping or plateau?
 5. Is the ensemble's value real **prediction diversity** or near-duplicate
    averaging (correlation re-measurement)?

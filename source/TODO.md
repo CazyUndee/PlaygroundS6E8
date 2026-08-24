@@ -7,49 +7,39 @@ command sequence — let evidence decide.
 
 ## P0 (active / high value)
 
-- [ ] **EXP-023**: Record the dual-seed (42+100) 5-fold result of the 44-feature
-      pipeline with `other_screen_time` (reconstructed `train_pipeline.py`).
-      Confirm the EXP-022 gain (+0.00042) survives the full dual-seed protocol
-      and produce a fresh matched submission. *(running on GitHub Actions —
-      `gh workflow run research.yml -f task=exp023_canonical`)*
-
-- [ ] **EXP-024 — age nonlinearity**: `age` (integer [18,35]) has ~0 linear
-      correlation with the label but a large nonlinear per-age effect that
-      survives within fixed screen-time bins (24/26/28 high ~0.77; 18/33 low
-      ~0.64). Hypothesis: raw numeric age is under-split by the trees.
-      Test, under identical seed-42 folds vs the 44-feature baseline
-      (0.96407): (a) age as native categorical, (b) one-hot age, (c) add
-      `age_even` + high-age flags. *(quick subsample A/B running — EXP-024)*
-
-- [x] **EXP-026 — combination features (total_screen/sm_weekend/all3)**:
-      ALL NEUTRAL (deltas -0.00003 / -0.00003 / 0.00000). Trees already
-      capture combinations; direction exhausted. Do not revisit without a
-      new mechanism.
+- [x] **EXP-023**: COMPLETED — 0.96466 OOF ROC-AUC (dual-seed 44-feature
+      super-ensemble). New champion, beats historical EXP-014 (0.96448).
 
 - [x] **EXP-024 — age nonlinearity**: REJECTED (OOF 0.96352 vs 0.96380,
       -0.00029). Raw numeric age already lets trees use the per-value signal;
       explicit encodings add overfitting capacity.
+
+- [x] **EXP-026 — combination features (total_screen/sm_weekend/all3)**:
+      ALL NEUTRAL (deltas -0.00003 / -0.00003 / 0.00000). Trees already
+      capture combinations; direction exhausted.
+
+- [ ] **EXP-027 — dual-seed tune winners**: leaves_31 (+0.00027 single-seed)
+      and subsample_095 (+0.00023) through full dual-seed (42+100) 5-fold
+      protocol, with canonical baseline for matched comparison. Script:
+      `state/exp027_leaves31.py`. *(launched on GitHub Actions)*
+      If any arm beats 0.96466, promote to canonical and submit.
 
 - [ ] **EXP-025 — count/sleep nonlinearity (LOW PRIORITY now)**: app_opens
       and sleep have nonlinear profiles, but given the age encoding failed,
       explicit encodings are unlikely to help. Only worth a quick screen if
       the tune scan reveals headroom.
 
-- [ ] **Hyperparameter tuning (active)**: lgbm_63 scan (lr 0.10/0.12/0.15,
-      leaves 31/63/95/127/255, min_child_samples 10/20/50, colsample
-      0.7/0.8/0.95, subsample 0.8/0.95, reg variants, capacity probes). If a
-      config clearly beats 0.96380, promote and re-run the dual-seed
-      protocol (EXP-027) on GH Actions.
+- [x] **Hyperparameter tuning scan**: COMPLETED. 17 configs scanned.
+      Winners: leaves_31 (+0.00027), subsample_095 (+0.00023), lr_010
+      (+0.00014). Regularization is critical (reg_none = -0.0017).
+      EXP-027 tests top 2 findings through dual-seed protocol.
 
 ## P1 (strong hypotheses, quick reads)
 
-- [ ] **Systematic generator-constraint search.** The `other_screen_time`
-      discovery came from checking one sum constraint. Systematically test
-      other plausible hard constraints among remaining features (e.g.
-      relationships between `notifications_per_day` / `app_opens_per_day` /
-      screen time / `weekend_screen_time`, and bounds/quantization of
-      `age`, `sleep_hours`). Any *zero-violation* constraint with a
-      non-trivial residual is worth evaluating as a feature.
+- [x] **Systematic generator-constraint search**: COMPLETED. Zero-violation
+      screen over all pairs/sums of 9 numeric features found no new hard
+      constraint of the other_screen_time magnitude. Most hits are trivial
+      range artifacts. No new feature candidate.
 - [ ] **DART boosting mode** (LightGBM) for prediction diversity — only after
       the reproducible matched baseline (EXP-023) exists, with per-model
       artifacts saved.

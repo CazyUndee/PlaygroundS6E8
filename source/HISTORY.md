@@ -510,3 +510,58 @@ Removing a feature group from the 44 features (OOF deltas vs full 0.96382):
   The generator's label is a screen-usage threshold with count-driven noise
   in the boundary band — the model already exploits this, so no new feature
   is indicated.
+
+---
+
+## Session 2026-08-20 — Hyperparameter tuning scan and EXP-027 setup
+### Tune scan results (lgbm_63, seed-42, 5-fold, 44 features)
+Ran 17 hyperparameter configurations through `state/exp_tune_lgbm.py` on
+GitHub Actions (workflow run 32036178719 or similar). All candidates keep
+the canonical regularization (reg_alpha=0.5, reg_lambda=5.0) except reg_none.
+
+**Top winners:**
+- `leaves_31` (num_leaves=31): OOF 0.96409, **+0.00027** vs canonical 0.96382.
+  Fewer leaves reduces overfitting to the many correlated ratio features in
+  the 44-feature pipeline. Counterintuitive (canonical used 63), but the
+  additional `other_screen_time` and domain-ratio features from the rebuild
+  created more opportunities for noisy leaf splits.
+- `subsample_095` (subsample=0.95): OOF 0.96405, **+0.00023**. Slightly more
+  data per tree (95% vs 80%) helps without overfitting.
+- `lr_010` (lr=0.10): OOF 0.96395, +0.00014. Slower learning helps marginally.
+
+**Critical finding:** `reg_none` (no L1/L2 regularization) = 0.96213,
+**-0.00169** vs canonical. This is far larger than the historical EXP-002
+estimate (+0.00022). Regularization is load-bearing on the 44-feature
+pipeline — it prevents overfitting to the many correlated ratio features
+and the `other_screen_time` residual. Never remove regularization.
+
+**Rejected in this scan:** lr_015 (-0.00015), leaves_95 (-0.00011),
+leaves_127 (-0.00018), colsample_070 (-0.00002), lambda_20 (-0.00013),
+deep_255 (-0.00008), deep_255_reg (-0.00010). More capacity (255 leaves)
+does not help — the ceiling is set by the data, not the model.
+
+### EXP-027: Dual-seed validation of tune winners
+Created `state/exp027_leaves31.py` to test the top 2 findings through the
+full dual-seed (42+100) 5-fold super-ensemble protocol:
+1. `leaves_31`: all 3 model configs use num_leaves=31 (lgbm_31/15/63)
+2. `leaves_31_sub095`: num_leaves=31 + subsample=0.95
+3. `canonical_63`: baseline reference for matched in-run comparison
+
+Added to `.github/workflows/research.yml` as `exp027_leaves31` task.
+Launched on GitHub Actions. If any arm beats the EXP-023 champion (0.96466),
+promote and re-run the canonical pipeline with the winning config.
+
+### Repo restructuring
+The persistent repo was restructured: `agent/` → `source/` (canonical code +
+memory files), `analysis/` → `state/analysis/`, `results/` → `state/results/`.
+Experiment scripts (`exp_ablate.py`, `exp_screen_features.py`,
+`exp_tune_lgbm.py`) moved to `state/`. This separates source code (what
+produces results) from run state/artifacts (what was produced).
+
+### Lessons
+- **Fewer leaves can beat more leaves** when the feature set has many
+  correlated ratios. The 44-feature pipeline has more redundancy than the
+  historical 36-feature set, so constraining leaf count is beneficial.
+- **Regularization magnitude was underestimated historically.** The -0.0017
+cost of removing it entirely is ~8x the EXP-002 estimate, because the
+44-feature pipeline has more correlated features that invite overfitting.

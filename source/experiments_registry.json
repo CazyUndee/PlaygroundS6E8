@@ -811,5 +811,37 @@
     },
     "conclusion": "ALL combination features are NEUTRAL for lgbm_63 (deltas -0.00003 to 0.00000 despite univariate AUC gains up to +0.026): the trees already capture multi-feature combinations via their splits. The feature-combination direction is exhausted. Only the age encoding arm remains pending.",
     "next_action": "Evaluate age screen; if neutral, pivot to hyperparameter tuning (tune task) and/or accept EXP-023 as champion."
+  },
+  {
+    "experiment_id": "EXP-027",
+    "parent_hypothesis": "Tune scan found leaves_31 (+0.00027) and subsample_095 (+0.00023) as the strongest hyperparameter improvements. Test both through the full dual-seed (42+100) 5-fold super-ensemble protocol to confirm whether they beat the EXP-023 champion (0.96466).",
+    "track": "HYPERPARAMETER_TUNING",
+    "status": "RUNNING_ON_GITHUB_ACTIONS",
+    "configuration": {
+      "arms": [
+        "leaves_31: num_leaves=31 (all 3 configs), reg_alpha=0.5, reg_lambda=5.0",
+        "leaves_31_sub095: num_leaves=31 + subsample=0.95",
+        "canonical_63: baseline reference (num_leaves=63)"
+      ],
+      "models": ["LGBM_63", "LGBM_45", "LGBM_127"],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 44,
+      "ensemble_method": "rank-average within seed, then across seeds",
+      "compute": "github_actions_ubuntu-latest"
+    },
+    "baseline_id": "EXP-023",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": null,
+    "fold_auc": {},
+    "delta": null,
+    "runtime": null,
+    "compute_cost": "~15 min on GH Actions (estimated)",
+    "artifact_paths": {
+      "script": "state/exp027_leaves31.py",
+      "tune_scan": "state/tune_results/tune_results.json"
+    },
+    "conclusion": "Tune scan on lgbm_63 (17 configs, seed-42, 5-fold) found leaves_31 = 0.96409 (+0.00027) and subsample_095 = 0.96405 (+0.00023) as winners. Regularization is critical (reg_none = 0.96213, -0.0017). EXP-027 runs the top 2 findings + canonical baseline through dual-seed protocol for matched comparison.",
+    "next_action": "Check GH Actions run results; if any arm beats 0.96466, promote and update canonical pipeline."
   }
 ]
