@@ -13,6 +13,7 @@ on:
           - exp029_triple_seed
           - exp030_champion_stack
           - exp031_dart_diversity
+          - exp032_cross_family
           - screen
           - tune
           - ablate
@@ -450,4 +451,46 @@ jobs:
         with:
           name: exp031-results
           path: artifacts/exp031/
+          retention-days: 90
+
+  exp032_cross_family:
+    if: ${{ inputs.task == 'exp032_cross_family' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EXP-032 cross-family diversity probe (XGB + CatBoost)
+        run: |
+          python -u state/exp032_cross_family.py 2>&1 | tee exp032_run.log
+          echo "=== tail ==="
+          tail -40 exp032_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp032
+          cp exp032_results.json artifacts/exp032/
+          cp exp032_run.log artifacts/exp032/
+          for arm in exp032_lgbm exp032_xgb exp032_cat exp032_blend_lgbm_xgb exp032_blend_lgbm_cat exp032_blend_lgbm_xgb_cat; do
+            if [ -d "$arm" ]; then
+              mkdir -p "artifacts/exp032/$arm"
+              cp "$arm"/*.csv "$arm"/*.npy "artifacts/exp032/$arm/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp032-results
+          path: artifacts/exp032/
           retention-days: 90
