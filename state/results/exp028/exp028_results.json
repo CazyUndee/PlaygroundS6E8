@@ -1,0 +1,131 @@
+{
+  "grid": {
+    "leaves_20": {
+      "oof_auc": 0.9641834414282946,
+      "fold_aucs": [
+        0.96356,
+        0.96406,
+        0.96423,
+        0.96508,
+        0.964
+      ]
+    },
+    "leaves_25": {
+      "oof_auc": 0.9641929798226911,
+      "fold_aucs": [
+        0.96352,
+        0.96411,
+        0.96416,
+        0.96512,
+        0.96404
+      ]
+    },
+    "leaves_31": {
+      "oof_auc": 0.9640850989962125,
+      "fold_aucs": [
+        0.96333,
+        0.96388,
+        0.96423,
+        0.96504,
+        0.96395
+      ]
+    },
+    "leaves_35": {
+      "oof_auc": 0.9640965973581583,
+      "fold_aucs": [
+        0.96345,
+        0.96396,
+        0.96407,
+        0.96504,
+        0.96396
+      ]
+    },
+    "leaves_45": {
+      "oof_auc": 0.9639692353739244,
+      "fold_aucs": [
+        0.96333,
+        0.96383,
+        0.96398,
+        0.96485,
+        0.96386
+      ]
+    }
+  },
+  "dual_seed": {
+    "leaves_31": {
+      "seeds": [
+        42,
+        100
+      ],
+      "seed42_oof_auc": 0.9645380775647164,
+      "seed100_oof_auc": 0.9646525756805976,
+      "super_ensemble_oof_auc": 0.9648573076484701,
+      "arm_config": {
+        "num_leaves": 31,
+        "reg_alpha": 0.5,
+        "reg_lambda": 5.0
+      }
+    },
+    "leaves_31_lr010": {
+      "seeds": [
+        42,
+        100
+      ],
+      "seed42_oof_auc": 0.9645997977367846,
+      "seed100_oof_auc": 0.9647084298944751,
+      "super_ensemble_oof_auc": 0.9649061764859589,
+      "arm_config": {
+        "num_leaves": 31,
+        "reg_alpha": 0.5,
+        "reg_lambda": 5.0,
+        "learning_rate": 0.1
+      }
+    },
+    "leaves_31_mcs50": {
+      "seeds": [
+        42,
+        100
+      ],
+      "seed42_oof_auc": 0.9646069768995186,
+      "seed100_oof_auc": 0.9646437203514802,
+      "super_ensemble_oof_auc": 0.9648910133146332,
+      "arm_config": {
+        "num_leaves": 31,
+        "reg_alpha": 0.5,
+        "reg_lambda": 5.0,
+        "min_child_samples": 50
+      }
+    },
+    "leaves_31_lr010_mcs50": {
+      "seeds": [
+        42,
+        100
+      ],
+      "seed42_oof_auc": 0.9646328633178554,
+      "seed100_oof_auc": 0.9646974625230491,
+      "super_ensemble_oof_auc": 0.964913312374191,
+      "arm_config": {
+        "num_leaves": 31,
+        "reg_alpha": 0.5,
+        "reg_lambda": 5.0,
+        "learning_rate": 0.1,
+        "min_child_samples": 50
+      }
+    },
+    "canonical_63": {
+      "seeds": [
+        42,
+        100
+      ],
+      "seed42_oof_auc": 0.9642967210634981,
+      "seed100_oof_auc": 0.964396733562532,
+      "super_ensemble_oof_auc": 0.9646401339162424,
+      "arm_config": {
+        "num_leaves": 63,
+        "reg_alpha": 0.5,
+        "reg_lambda": 5.0
+      }
+    }
+  },
+  "wallclock_seconds": 7437.092047691345
+}

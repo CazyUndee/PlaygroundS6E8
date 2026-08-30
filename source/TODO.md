@@ -32,13 +32,23 @@ command sequence — let evidence decide.
       Winners: leaves_31 (+0.00027), subsample_095 (+0.00023), lr_010
       (+0.00014). Regularization is critical (reg_none = -0.0017).
 
-- [ ] **EXP-028 — second-order combos**: leaves_31+lr_010, leaves_31+mcs_50,
-      triple combo, and refined leaves grid (20/25/31/35/45). Script:
-      `state/exp028_leaves31_combo.py`. *(queued for GH Actions)*
+- [x] **EXP-028 — second-order combos**: COMPLETED. lr010/mcs50 add small
+      gains (+0.00003-0.00006 dual-seed) but were tested WITHOUT sub095;
+      best arm leaves_31_lr010_mcs50 = 0.96491, below champion. Leaves grid
+      20-35 flat (25 marginally best). Result: `state/results/exp028/`.
 
-- [ ] **EXP-029 — triple fold-partition seed**: adds seed=2026 to the
-      super-ensemble to test if more diversity helps or plateaus.
-      Script: `state/exp029_triple_seed.py`. *(queued for GH Actions)*
+- [x] **EXP-029 — triple fold-partition seed**: COMPLETED. Seed 2026 adds
+      only +0.00006 — **dual-seed is the cost/performance optimum**.
+      Result: `state/results/exp029/`.
+
+- [ ] **EXP-030 — champion full-stack (sub095 x lr010 x mcs50)**: running on
+      GH Actions. 6 arms dual-seed: sub095+lr010, sub095+mcs50, full stack
+      (leaves_31), full stack (leaves_25), champion reference, canonical
+      baseline. Script: `state/exp030_champion_stack.py`.
+
+- [ ] **EXP-031 — DART diversity probe**: running on GH Actions. DART vs
+      gbdt champion dual-seed + OOF correlation matrix (within-seed across
+      the 3 configs, cross-seed). Script: `state/exp031_dart_diversity.py`.
 
 ## P1 (strong hypotheses, quick reads)
 

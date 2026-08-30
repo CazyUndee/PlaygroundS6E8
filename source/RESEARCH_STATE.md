@@ -1,6 +1,6 @@
 # Research State — Smartphone Addiction (Kaggle Playground S6E8)
 
-**Last updated**: 2026-08-24 (EXP-027 complete — new champion 0.96498)
+**Last updated**: 2026-08-30 (EXP-028/029 complete — champion still EXP-027 0.96498; EXP-030/031 running)
 **Metric**: OOF ROC-AUC (5-fold stratified CV; dual-seed rank-average super-ensemble)
 
 ---
@@ -28,6 +28,8 @@ in HISTORY.md. It is now committed to the persistent repo (GitHub).
 | EXP-022 | + `other_screen_time` (+_isna), **single-seed** | 0.96407 (+0.00042) | **PROMOTED** |
 | EXP-023 | 44-feature, **dual-seed** (42+100) | 0.96466 (+0.00064 vs EXP-021) | previous champion |
 | **EXP-027** | leaves_31 + sub095, **dual-seed** (42+100) | **0.96498** (+0.00032 vs EXP-023) | **CANONICAL WINNER** |
+| EXP-028 | leaves_31+lr010+mcs50, **dual-seed** | 0.96491 (+0.00025 vs EXP-023) | below champion — not promoted |
+| EXP-029 | triple seed (42+100+2026) | +0.00006 vs dual-seed | **dual-seed is the cost/performance optimum** |
 
 **Current champion = EXP-027 leaves_31_sub095: 0.96498 OOF ROC-AUC** (seed 42: 0.96435,
 seed 100: 0.96439), computed on GitHub Actions (15 min, fully reproducible;
@@ -127,22 +129,46 @@ Fewer leaves reduces overfitting to the many correlated ratio features in
 the 44-feature pipeline. Subsample=0.95 provides a clean additional win.
 Both promote to the canonical pipeline.
 
-Next experiments (EXP-028/029) are queued for second-order combos and
-triple-seed diversity testing.
+## Second-order combos and seed diversity — RESOLVED (EXP-028/029)
+
+**EXP-028 (second-order combos, run 32739428150, 124 min, GH Actions):**
+
+| Arm (dual-seed super) | super OOF | vs EXP-023 | vs EXP-027 |
+| :--- | :---: | :---: | :---: |
+| canonical_63 (baseline) | 0.96464 | — | — |
+| leaves_31 | 0.96486 | +0.00020 | — |
+| leaves_31_lr010 | 0.96491 | +0.00024 | — |
+| leaves_31_mcs50 | 0.96489 | +0.00023 | — |
+| **leaves_31_lr010_mcs50** | **0.96491** | +0.00025 | — |
+
+leaves grid (single-seed): 20=0.96418, 25=0.96419, 31=0.96409, 35=0.96410,
+45=0.96397 — **flat 20-35, 25 marginally best; no grid point beats the
+champion**. lr010/mcs50 add small gains (+0.00003 to +0.00006) but were
+**tested WITHOUT subsample_095** — the stacking question is EXP-030's job.
+
+**EXP-029 (triple fold-partition seed, run 32739432326, 58 min):** adding
+seed 2026 to the super-ensemble adds only **+0.00006** (leaves_31: dual
+0.96486 → triple 0.96491; canonical: 0.96464 → 0.96470). **Dual-seed is
+the cost/performance optimum** — D9's diminishing-returns prediction
+confirmed. More seed diversity is not the path forward.
 
 ## Key uncertainties / next questions
 
-1. **Do second-order combos (lr_010, mcs_50) help on top of leaves_31?**
-   EXP-028 running — tests leaves_31+lr_010, leaves_31+mcs_50, triple combo.
-2. **Does a 3rd fold-partition seed (2026) add diversity?** EXP-029 queued —
-   tests if the ensemble value plateaus at 2 seeds.
+1. **Does stacking sub095 with lr010/mcs50 beat 0.96498?** EXP-030 running
+   (champion stack arms: sub095+lr010, sub095+mcs50, full stack, leaves_25
+   full stack). If gains are additive, full stack could reach ~0.96503.
+2. **Is DART a competitive diverse model for blending?** EXP-031 running —
+   DART vs gbdt champion + OOF correlation matrix (within-seed across the
+   3 configs, and cross-seed). Directly tests the near-duplicate-averaging
+   hypothesis (corr 0.994-0.997).
 3. **Are there other undiscovered hard generator constraints?** *(systematic
    search found none beyond `dst >= social+gaming+work`.)*
-4. **Is the ensemble's value real diversity or near-duplicate averaging?**
-   (Correlation re-measurement; models correlate 0.994-0.997.)
-5. **Does the new champion's subgroup gradient change?** (0-missing ~0.973
+4. **Does the new champion's subgroup gradient change?** (0-missing ~0.973
    vs 5-missing ~0.915 — verify on EXP-027 predictions.)
-6. **Is the refined num_leaves optimum at 31 or elsewhere?** EXP-028 tests
-   a leaves grid (20/25/31/35/45) to pinpoint the optimum.
+5. **Should the canonical pipeline now be updated to the EXP-027 config?**
+   Memory files record num_leaves=31/sub095 (D24) but `train_pipeline.py` /
+   `models.py` still hardcode 63/0.8 — **pending EXP-030 confirmation of the
+   final champion config before touching shared code** (EXP-030 imports
+   COMMON_PARAMS).
 
 See `TODO.md` for the live queue and `DECISIONS.md` for durable conclusions.

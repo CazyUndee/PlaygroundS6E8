@@ -2,7 +2,7 @@
   "competition": "Playground Series S6E8 (Predicting Smartphone Addiction)",
   "persistent_home": "GitHub (was Hugging Face cazyundee/PlaygroundS6E8)",
   "last_recovered_from": "github:origin (previously huggingface:cazyundee/PlaygroundS6E8 @ sha b6ec49f42ef5a71a643700b35f168ff26387d446)",
-  "current_phase": "PHASE_14_NEW_CHAMPION_EXP027_LEAVES31_SUB095",
+  "current_phase": "PHASE_15_EXP028_029_COMPLETE_EXP030_031_RUNNING",
   "compute_environment": "ALL model compute runs on GitHub Actions (ubuntu-latest, 4 vCPU) via .github/workflows/research.yml; local machine is orchestration only (push / gh workflow run / download artifacts / curate + commit results)",
   "canonical_score": 0.96498,
   "canonical_experiment": "EXP-027 leaves_31_sub095 (dual-seed 42+100, 5-fold; seed42=0.96470 seed100=0.96473 super=0.96498)",
@@ -29,11 +29,18 @@
     "delta_vs_exp021_seed42": 0.00042
   },
   "active_experiment": {
-    "id": "EXP-028",
-    "description": "Second-order combos: leaves_31+lr_010, leaves_31+mcs_50, triple combo, and refined leaves grid",
-    "status": "queued",
-    "script": "state/exp028_leaves31_combo.py",
-    "command": "gh workflow run research.yml -f task=exp028_combo"
+    "id": "EXP-030",
+    "description": "Champion full-stack: sub095 x lr010 x mcs50 (leaves_31 and leaves_25), 6 dual-seed arms",
+    "status": "running",
+    "script": "state/exp030_champion_stack.py",
+    "command": "gh workflow run research.yml -f task=exp030_champion_stack"
+  },
+  "parallel_experiment": {
+    "id": "EXP-031",
+    "description": "DART diversity probe vs gbdt champion + OOF correlation diagnostics",
+    "status": "running",
+    "script": "state/exp031_dart_diversity.py",
+    "command": "gh workflow run research.yml -f task=exp031_dart_diversity"
   },
   "tune_scan_results": {
     "scan_script": "state/exp_tune_lgbm.py",
@@ -53,12 +60,13 @@
     "conclusion": "The 44-feature pipeline already captures the sufficient statistics; feature direction is exhausted."
   },
   "champion": {
-    "id": "EXP-023",
-    "oof_auc": 0.96466,
-    "submission": "state/results/exp023/submission.csv",
-    "results": "state/results/exp023/pipeline_results.json",
-    "oof_arrays": "workflow artifact exp023-results (retention 90d); also scratch_oof/ locally",
-    "regenerate": "gh workflow run research.yml -f task=exp023_canonical"
+    "id": "EXP-027",
+    "oof_auc": 0.96498,
+    "config": "leaves_31 + subsample_095, dual-seed 42+100 5-fold",
+    "results": "state/results/exp027/exp027_results.json",
+    "oof_arrays": "workflow artifact exp027-results (retention 90d)",
+    "note": "EXP-028/029 confirmed no second-order or seed-diversity improvement; EXP-030/031 probing remaining stack + model diversity",
+    "regenerate": "gh workflow run research.yml -f task=exp030_champion_stack (champion arm = champ_sub095)"
   },
   "local_partial_reference": "Local EXP-023 seed-42 folds 1-4 lgbm_63 fold AUCs: 0.96313/0.96365/0.96386/0.96468 (tracks historical fold pattern; fold 5+seed 100 not run locally)",
   "completed_experiments": [
@@ -68,7 +76,10 @@
     "EXP-023: 44-feature dual-seed champion (0.96466) [CANONICAL WINNER]",
     "EXP-024: age encoding — REJECTED (-0.00029)",
     "EXP-026: combination features — ALL NEUTRAL",
-    "Hyperparameter tuning scan: 17 configs, leaves_31 winner (+0.00027)"
+    "Hyperparameter tuning scan: 17 configs, leaves_31 winner (+0.00027)",
+    "EXP-027: leaves_31+sub095 dual-seed 0.96498 [CANONICAL WINNER]",
+    "EXP-028: second-order combos — best 0.96491, NO promotion (combos lacked sub095)",
+    "EXP-029: triple seed — +0.00006 only, dual-seed optimum confirmed"
   ],
   "rejected_experiments": [
     "EXP-001 subgroup quantile ranks",
@@ -80,12 +91,13 @@
     "EXP-019/020 blend sweeps (no promotion, proxy evidence)"
   ],
   "next_experiments": [
-    "EXP-028 (queued): second-order combos (+lr_010, +mcs_50, leaves grid 20-45)",
-    "EXP-029 (queued): triple fold-partition seed (2026) super-ensemble",
-    "DART boosting diversity test (post-EXP-028/029)",
+    "EXP-030 (running): champion full-stack sub095 x lr010 x mcs50 (leaves_31/25)",
+    "EXP-031 (running): DART diversity probe + OOF correlation diagnostics",
+    "After EXP-030: promote final canonical config into train_pipeline.py/models.py (currently still 63/0.8)",
+    "If DART competitive: DART+gbdt blend test; else close diversity question",
     "Missingness conjunction flags (cheap, low prior)",
     "Feature ablation of other_screen_time in new canonical",
-    "Model/seed prediction diversity re-measurement on EXP-027 predictions"
+    "Cross-family blend (XGB/CatBoost) if correlations confirm near-duplicate averaging"
   ],
   "resume_note": "Recover memory from RESEARCH_STATE.md/DECISIONS.md/TODO.md; run `python -u source/train_pipeline.py --out submission_matched_super.csv` to regenerate the champion."
 }

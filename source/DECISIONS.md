@@ -139,3 +139,16 @@ EXP-027 dual-seed (42+100) 5-fold: 0.96498 OOF AUC, beating EXP-023
 (0.96466) by +0.00032. The two effects combine nearly additively.
 Canonical config: num_leaves=31, reg_alpha=0.5, reg_lambda=5.0,
 subsample=0.95. Replaces num_leaves=63, subsample=0.80.
+
+**D25 — lr_010/mcs_50 give small secondary gains on top of leaves_31.
+EXP-028 (dual-seed): leaves_31+lr010 = 0.96491 (+0.00005 vs leaves_31),
++mcs50 = 0.96489, both = 0.96491. All below the EXP-027 champion (0.96498).
+The refined num_leaves grid (20/25/31/35/45) is flat at 0.9641-0.9642
+single-seed, 25 marginally best — the exact leaves value beyond 25-31 is
+noise. The one untested combination is stacking these knobs WITH
+subsample_095 (EXP-030).**
+
+**D26 — Dual-seed is the ensemble cost/performance optimum. EXP-029: adding
+a 3rd fold-partition seed (2026) adds only +0.00006 OOF AUC (leaves_31:
+0.96486 → 0.96491; canonical: 0.96464 → 0.96470). Confirms D9's
+diminishing-returns prediction. More fold seeds are not the path forward.**

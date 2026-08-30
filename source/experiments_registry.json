@@ -823,7 +823,11 @@
         "leaves_31_sub095: num_leaves=31 + subsample=0.95",
         "canonical_63: baseline reference (num_leaves=63)"
       ],
-      "models": ["LGBM_63", "LGBM_45", "LGBM_127"],
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
       "n_splits": 5,
       "num_seeds": 2,
       "features_count": 44,
@@ -840,13 +844,13 @@
         "super_ensemble_auc": 0.96486
       },
       "leaves_31_sub095": {
-        "seed42_ensemble_auc": 0.96470,
+        "seed42_ensemble_auc": 0.9647,
         "seed100_ensemble_auc": 0.96473,
         "super_ensemble_auc": 0.96498
       },
       "canonical_63": {
         "seed42_ensemble_auc": 0.96431,
-        "seed100_ensemble_auc": 0.96440,
+        "seed100_ensemble_auc": 0.9644,
         "super_ensemble_auc": 0.96465
       }
     },
@@ -859,5 +863,180 @@
     },
     "conclusion": "NEW REPRODUCIBLE CHAMPION. leaves_31+sub095 dual-seed super-ensemble = 0.96498, beating EXP-023 (0.96466) by +0.00032. Both tune-scan winners survived dual-seed validation. Canonical_63 replicated at 0.96465 confirming matched comparison. The subsample_095 effect is additive with leaves_31. Wallclock 43 min on GitHub Actions.",
     "next_action": "Promote leaves_31+sub095 to canonical config. Launch EXP-028 (second-order combos: +lr_010, +mcs_50, leaves grid) and EXP-029 (triple seed 2026)."
+  },
+  {
+    "experiment_id": "EXP-028",
+    "parent_hypothesis": "EXP-027 confirmed leaves_31+sub095. Do second-order knobs (lr_010, mcs_50) stack on top of leaves_31, and is the refined num_leaves optimum at 31?",
+    "track": "HYPERPARAMETER_TUNING",
+    "status": "COMPLETED_NO_PROMOTION",
+    "configuration": {
+      "arms": [
+        "leaves_31, leaves_31_lr010, leaves_31_mcs50, leaves_31_lr010_mcs50, canonical_63 (all dual-seed)",
+        "single-seed leaves grid: 20/25/31/35/45"
+      ],
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 44,
+      "ensemble_method": "rank-average within seed, then across seeds",
+      "compute": "github_actions_ubuntu-latest"
+    },
+    "baseline_id": "EXP-027",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": 0.96491,
+    "fold_auc": {
+      "leaves_31": {
+        "super_ensemble_auc": 0.96486
+      },
+      "leaves_31_lr010": {
+        "super_ensemble_auc": 0.96491
+      },
+      "leaves_31_mcs50": {
+        "super_ensemble_auc": 0.96489
+      },
+      "leaves_31_lr010_mcs50": {
+        "super_ensemble_auc": 0.96491
+      },
+      "canonical_63": {
+        "super_ensemble_auc": 0.96464
+      },
+      "leaves_grid_single_seed": {
+        "leaves_20": 0.96418,
+        "leaves_25": 0.96419,
+        "leaves_31": 0.96409,
+        "leaves_35": 0.9641,
+        "leaves_45": 0.96397
+      }
+    },
+    "delta": -7e-05,
+    "runtime": 7437.0,
+    "compute_cost": "github_actions_ubuntu-latest (124 min)",
+    "artifact_paths": [
+      "state/results/exp028/exp028_results.json",
+      "state/results/exp028/exp028_run.log"
+    ],
+    "conclusion": "lr010/mcs50 add small dual-seed gains (+0.00003 to +0.00006) on plain leaves_31 but ALL below the EXP-027 champion (0.96498). Leaves grid is flat 20-35 (25 marginally best). Key gap: combos were tested WITHOUT subsample_095 -> EXP-030.",
+    "next_action": "EXP-030: stack sub095 with lr010/mcs50 on the champion config"
+  },
+  {
+    "experiment_id": "EXP-029",
+    "parent_hypothesis": "Does a 3rd fold-partition seed (2026) add super-ensemble diversity beyond dual-seed (42+100)?",
+    "track": "ENSEMBLE_DIVERSITY",
+    "status": "COMPLETED_PLATEAU_CONFIRMED",
+    "configuration": {
+      "arms": [
+        "leaves_31 (3 seeds)",
+        "canonical_63 (3 seeds)"
+      ],
+      "models": [
+        "LGBM_63",
+        "LGBM_45",
+        "LGBM_127"
+      ],
+      "n_splits": 5,
+      "num_seeds": 3,
+      "features_count": 44,
+      "ensemble_method": "rank-average within seed, then across seeds",
+      "compute": "github_actions_ubuntu-latest"
+    },
+    "baseline_id": "EXP-027",
+    "fold_scheme": "Triple 5-Fold StratifiedKFold (seed=42, 100, 2026)",
+    "auc": 0.96491,
+    "fold_auc": {
+      "leaves_31": {
+        "dual_seed_auc": 0.96486,
+        "triple_seed_auc": 0.96491,
+        "delta": 6e-05
+      },
+      "canonical_63": {
+        "dual_seed_auc": 0.96464,
+        "triple_seed_auc": 0.9647,
+        "delta": 6e-05
+      }
+    },
+    "delta": 6e-05,
+    "runtime": 3460.0,
+    "compute_cost": "github_actions_ubuntu-latest (58 min)",
+    "artifact_paths": [
+      "state/results/exp029/exp029_results.json"
+    ],
+    "conclusion": "3rd seed adds only +0.00006 OOF AUC. Dual-seed is the cost/performance optimum; D9 diminishing-returns prediction confirmed. More fold seeds are not the path forward.",
+    "next_action": "EXP-030/031: stack remaining hyperparameter knobs and probe model-family diversity (DART)"
+  },
+  {
+    "experiment_id": "EXP-030",
+    "parent_hypothesis": "EXP-028 combos (lr010/mcs50) were tested without sub095. Stacking sub095 (EXP-027 winner) with lr010/mcs50 and leaves_25 could beat 0.96498 if gains are additive.",
+    "track": "HYPERPARAMETER_TUNING",
+    "status": "RUNNING",
+    "configuration": {
+      "arms": [
+        "champ_sub095 (reference)",
+        "champ_sub095_lr010",
+        "champ_sub095_mcs50",
+        "champ_sub095_lr010_mcs50",
+        "leaves25_sub095_lr010_mcs50",
+        "canonical_63 (baseline)"
+      ],
+      "models": [
+        "LGBM_31",
+        "LGBM_15",
+        "LGBM_63"
+      ],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 44,
+      "ensemble_method": "rank-average within seed, then across seeds",
+      "compute": "github_actions_ubuntu-latest"
+    },
+    "baseline_id": "EXP-027",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": null,
+    "fold_auc": {},
+    "delta": null,
+    "runtime": null,
+    "compute_cost": "github_actions_ubuntu-latest (~180 trainings)",
+    "artifact_paths": [
+      "state/exp030_champion_stack.py"
+    ],
+    "conclusion": "RUNNING on GitHub Actions.",
+    "next_action": "Promote winning config to canonical pipeline (train_pipeline.py/models.py) if it beats 0.96498"
+  },
+  {
+    "experiment_id": "EXP-031",
+    "parent_hypothesis": "Ensemble models correlate 0.994-0.997 (near-duplicate averaging). DART (dropout boosting) may give a competitive-but-diverse model worth blending. Also measures the actual OOF correlation structure.",
+    "track": "ENSEMBLE_DIVERSITY",
+    "status": "RUNNING",
+    "configuration": {
+      "arms": [
+        "gbdt_champ (reference)",
+        "dart_champ (boosting_type=dart, drop_rate=0.1)"
+      ],
+      "models": [
+        "LGBM_31",
+        "LGBM_15",
+        "LGBM_63"
+      ],
+      "n_splits": 5,
+      "num_seeds": 2,
+      "features_count": 44,
+      "ensemble_method": "rank-average within seed, then across seeds",
+      "compute": "github_actions_ubuntu-latest"
+    },
+    "baseline_id": "EXP-027",
+    "fold_scheme": "Dual 5-Fold StratifiedKFold (seed=42 and seed=100)",
+    "auc": null,
+    "fold_auc": {},
+    "delta": null,
+    "runtime": null,
+    "compute_cost": "github_actions_ubuntu-latest (~60 trainings + corr diagnostics)",
+    "artifact_paths": [
+      "state/exp031_dart_diversity.py"
+    ],
+    "conclusion": "RUNNING on GitHub Actions.",
+    "next_action": "If DART is competitive and uncorrelated, test a DART+gbdt blend; otherwise close the diversity question"
   }
 ]

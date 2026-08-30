@@ -11,6 +11,8 @@ on:
           - exp027
           - exp028_combo
           - exp029_triple_seed
+          - exp030_champion_stack
+          - exp031_dart_diversity
           - screen
           - tune
           - ablate
@@ -364,4 +366,88 @@ jobs:
         with:
           name: exp029-results
           path: artifacts/exp029/
+          retention-days: 90
+
+  exp030_champion_stack:
+    if: ${{ inputs.task == 'exp030_champion_stack' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EXP-030 champion full-stack combos (sub095 x lr010 x mcs50)
+        run: |
+          python -u state/exp030_champion_stack.py 2>&1 | tee exp030_run.log
+          echo "=== tail ==="
+          tail -30 exp030_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp030
+          cp exp030_results.json artifacts/exp030/
+          cp exp030_run.log artifacts/exp030/
+          for arm in exp030_champ_sub095 exp030_champ_sub095_lr010 exp030_champ_sub095_mcs50 exp030_champ_sub095_lr010_mcs50 exp030_leaves25_sub095_lr010_mcs50 exp030_canonical_63; do
+            if [ -d "$arm" ]; then
+              mkdir -p "artifacts/exp030/$arm"
+              cp "$arm"/*.csv "$arm"/*.npy "artifacts/exp030/$arm/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp030-results
+          path: artifacts/exp030/
+          retention-days: 90
+
+  exp031_dart_diversity:
+    if: ${{ inputs.task == 'exp031_dart_diversity' || inputs.task == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EXP-031 DART diversity probe + correlation diagnostics
+        run: |
+          python -u state/exp031_dart_diversity.py 2>&1 | tee exp031_run.log
+          echo "=== tail ==="
+          tail -40 exp031_run.log
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts/exp031
+          cp exp031_results.json artifacts/exp031/
+          cp exp031_run.log artifacts/exp031/
+          for arm in exp031_gbdt_champ exp031_dart_champ; do
+            if [ -d "$arm" ]; then
+              mkdir -p "artifacts/exp031/$arm"
+              cp "$arm"/*.csv "$arm"/*.npy "artifacts/exp031/$arm/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp031-results
+          path: artifacts/exp031/
           retention-days: 90

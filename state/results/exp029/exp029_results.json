@@ -1,0 +1,33 @@
+{
+  "leaves_31": {
+    "seed_aucs": {
+      "42": 0.9645338180404743,
+      "100": 0.964654266745426,
+      "2026": 0.964494460530521
+    },
+    "dual_seed_oof_auc": 0.9648558347423408,
+    "triple_seed_oof_auc": 0.9649111785779202,
+    "delta_tri_vs_dual": 5.534383557936895e-05,
+    "arm_config": {
+      "num_leaves": 31,
+      "reg_alpha": 0.5,
+      "reg_lambda": 5.0
+    }
+  },
+  "canonical_63": {
+    "seed_aucs": {
+      "42": 0.96430384910163,
+      "100": 0.9643927179445058,
+      "2026": 0.9642293756933256
+    },
+    "dual_seed_oof_auc": 0.9646417676251027,
+    "triple_seed_oof_auc": 0.9647020514064399,
+    "delta_tri_vs_dual": 6.028378133726697e-05,
+    "arm_config": {
+      "num_leaves": 63,
+      "reg_alpha": 0.5,
+      "reg_lambda": 5.0
+    }
+  },
+  "wallclock_seconds": 3460.5545082092285
+}

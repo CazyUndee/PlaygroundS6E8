@@ -590,3 +590,45 @@ reg_alpha=0.5, reg_lambda=5.0, subsample=0.95, colsample=0.8.
 Saved: state/results/exp027/exp027_results.json.
 Next: EXP-028 (second-order combos: +lr_010, +mcs_50, leaves grid) and
 EXP-029 (triple fold-partition seed 2026).
+
+---
+## Session 2026-08-30 — EXP-028/029 complete, champion unchanged, EXP-030/031 launched
+### EXP-028 COMPLETE — second-order combos + leaves grid (run 32739428150, 124 min)
+Six dual-seed arms + 5-point single-seed leaves grid (225 trainings):
+- canonical_63: 0.96464 (baseline replicates again)
+- leaves_31: 0.96486, leaves_31+lr010: 0.96491, leaves_31+mcs50: 0.96489,
+  **leaves_31+lr010+mcs50: 0.96491** (best combo arm, +0.00025 vs EXP-023)
+- leaves grid (single-seed): 20=0.96418, 25=0.96419, 31=0.96409, 35=0.96410,
+  45=0.96397 — flat 20-35, 25 marginally best; no point beats champion
+
+**Key gap: EXP-028 combos were tested WITHOUT subsample_095.** lr010/mcs50
+stack on leaves_31 alone; the champion stack (sub095 × lr010 × mcs50) is
+untested → EXP-030.
+Saved: state/results/exp028/.
+
+### EXP-029 COMPLETE — triple fold-partition seed (run 32739432326, 58 min)
+Seed 2026 added to the super-ensemble: leaves_31 dual 0.96486 → triple
+0.96491 (+0.00006); canonical 0.96464 → 0.96470 (+0.00006). **Dual-seed is
+the cost/performance optimum** — D9's diminishing-returns prediction
+confirmed. More fold seeds are not the path forward.
+Saved: state/results/exp029/.
+
+### EXP-030/031 launched (parallel, isolated GH runners)
+- **EXP-030 champion stack** (`state/exp030_champion_stack.py`): sub095+lr010,
+  sub095+mcs50, full stack (leaves_31), full stack (leaves_25), champion
+  reference, canonical baseline — 6 dual-seed arms, ~180 trainings.
+- **EXP-031 DART diversity probe** (`state/exp031_dart_diversity.py`):
+  boosting_type=dart vs gbdt champion (dual-seed) + OOF correlation
+  diagnostics (within-seed across lgbm_31/15/63, cross-seed) + dart+gbdt
+  blend read. Directly tests the near-duplicate-averaging hypothesis.
+
+### Lessons
+- **The hyperparameter surface is nearly exhausted.** leaves grid flat,
+  lr/mcs gains ≤ +0.00006, third seed +0.00006. Remaining upside is either
+  stacking sub095 with the secondary knobs (EXP-030) or genuine model
+  diversity (EXP-031 DART/cross-family blending).
+- **Canonical config promotion is still pending in code.** Memory files
+  record num_leaves=31/sub095 (D24) but `train_pipeline.py`/`models.py`
+  still hardcode 63/0.8. Deliberately deferred until EXP-030 confirms the
+  final config (EXP-030 imports COMMON_PARAMS, so changing it mid-run
+  would silently alter the canonical_63 reference arm).
